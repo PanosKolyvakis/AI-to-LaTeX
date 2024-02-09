@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Application's Name</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- KaTeX CSS for LaTeX rendering -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css">
+    <style>
+        body {
+            /* Set the background image */
+            background-image: url(static/robot.png);
+            /* Make the background image cover the entire area */
+            background-size: cover;
+            /* Set the background image to be fixed in the viewport */
+            background-attachment: fixed;
+            /* Ensure the background image doesn't repeat */
+            background-repeat: no-repeat;
+            /* Set the background position to the center for better focus */
+            background-position: center center;
+            /* Optional: Set a background color as a fallback */
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1> AI BlogWriter</h1>
+    <form id="searchForm">
+        <input type="text" id="searchQuery" placeholder="Enter search query">
+        <select id="writingStyle" name="writingStyle">
+            <option value="scientific">Scientific Writing</option>
+            <option value="casual">Casual Writing</option>
+            <option value="business">Business Writing</option>
+        </select>
+        <button type="submit">Search</button>
+    </form>
+    <div id="blogPost"></div>
+
+    <script>
+    $(document).ready(function() {
+        $('#searchForm').submit(function(event) {
+            event.preventDefault();
+            var query = $('#searchQuery').val();
+            var writingStyle = $('#writingStyle').val();
+            $.ajax({
+                type: "POST",
+                url: "/search-to-blog",
+                contentType: "application/json",
+                data: JSON.stringify({ "query": query, "style": writingStyle }),
+                success: function(response) {
+                    $('#blogPost').html('<h2>Blog Post</h2>' + response.blog_post + '<h3>References</h3><ul>' + response.references.map(function(url) {
+                        return '<li><a href="' + url + '" target="_blank">' + url + '</a></li>';
+                    }).join('') + '</ul>');
+                    // Render LaTeX content after updating the HTML
+                    renderMathInElement(document.getElementById('blogPost'));
+                },
+                error: function(error) {
+                    console.log(error);
+                    $('#blogPost').html('<p>An error occurred</p>');
+                }
+            });
+        });
+    });
+    </script>
+</body>
+</html>
