@@ -6,4 +6,7 @@ Images: To add an image, use the syntax ![alt text](image URL).
 Lists: For unordered lists, use asterisks, plus signs, or hyphens. For ordered lists, use numbers. -->
 
 
-This project is using 
+# Google Cloud Programmable Search Engine
+
+
+This project is using Google's Cloud Services to instantiate aOpenAI ChatGPT-4 to 
