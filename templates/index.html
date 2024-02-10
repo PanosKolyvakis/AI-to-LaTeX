@@ -1,30 +1,39 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Your Application's Name</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <!-- KaTeX CSS for LaTeX rendering -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css">
     <style>
         body {
-            /* Set the background image */
             background-image: url(static/robot.png);
-            /* Make the background image cover the entire area */
-            background-size: cover;
-            /* Set the background image to be fixed in the viewport */
+            background-size: 70%; /* Reduced from 100% to 70% */
             background-attachment: fixed;
-            /* Ensure the background image doesn't repeat */
             background-repeat: no-repeat;
-            /* Set the background position to the center for better focus */
             background-position: center center;
-            /* Optional: Set a background color as a fallback */
             background-color: #f0f0f0;
+            text-align: center; /* Aligns text to the center */
+            color: white; /* Changes font color to white */
+        }
+        h1 {
+            color: white; /* Makes the title's text color white */
+        }
+        form {
+            margin: 0 auto;
+            width: 50%; /* Adjust as needed to center the form */
+        }
+        input[type="text"], select, button {
+            font-size: 1.2em; /* Increases font size */
+            margin: 10px 0; /* Adds space around inputs */
+        }
+        #blogPost {
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <h1> AI BlogWriter</h1>
+    <h1>AI BlogWriter</h1>
     <form id="searchForm">
         <input type="text" id="searchQuery" placeholder="Enter search query">
         <select id="writingStyle" name="writingStyle">
@@ -51,8 +60,89 @@
                     $('#blogPost').html('<h2>Blog Post</h2>' + response.blog_post + '<h3>References</h3><ul>' + response.references.map(function(url) {
                         return '<li><a href="' + url + '" target="_blank">' + url + '</a></li>';
                     }).join('') + '</ul>');
-                    // Render LaTeX content after updating the HTML
                     renderMathInElement(document.getElementById('blogPost'));
+                },
+                error: function(error) {
+                    console.log(error);
+                    $('#blogPost').html('<p>An error occurred</p>');
+                }
+            });
+        });
+    });
+    </script>
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Application's Name</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css">
+    <style>
+        body {
+            background-image: url(static/robot.png);
+            background-size: 70%;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-color: #f0f0f0;
+            text-align: center;
+            color: white;
+        }
+        h1 {
+            color: white;
+        }
+        form {
+            margin: 0 auto;
+            width: 50%;
+        }
+        input[type="text"], select, button {
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+        #blogPost {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI BlogWriter</h1>
+    <form id="searchForm">
+        <input type="text" id="searchQuery" placeholder="Enter search query">
+        <select id="writingStyle" name="writingStyle">
+            <option value="scientific">Scientific Writing</option>
+            <option value="casual">Casual Writing</option>
+            <option value="business">Business Writing</option>
+        </select>
+        <button type="submit">Search</button>
+    </form>
+    <div id="blogPost"></div>
+
+    <script>
+    $(document).ready(function() {
+        $('#searchForm').submit(function(event) {
+            event.preventDefault();
+            var query = $('#searchQuery').val();
+            var writingStyle = $('#writingStyle').val();
+            $.ajax({
+                type: "POST",
+                url: "/search-to-blog",
+                contentType: "application/json",
+                data: JSON.stringify({ "query": query, "style": writingStyle }),
+                success: function(response) {
+                    // Display blog post content and references
+                    $('#blogPost').html('<h2>Blog Post</h2>' + response.blog_post + '<h3>References</h3><ul>' + response.references.map(function(url) {
+                        return '<li><a href="' + url + '" target="_blank">' + url + '</a></li>';
+                    }).join('') + '</ul>');
+
+                    // Trigger PDF download
+                    var pdfLink = $('<a/>', {
+                        'href': '/download-pdf?filename=' + response.pdf_filename,
+                        'text': 'Download PDF',
+                        'download': response.pdf_filename
+                    });
+                    $('#blogPost').append(pdfLink);
                 },
                 error: function(error) {
                     console.log(error);
