@@ -63,7 +63,7 @@ def compile_latex_to_pdf_alternative():
     except Exception as e:
         return f"An error occurred during LaTeX compilation: {e}"
 
-# Function to delete files
+# Function to delete files // not used
 def cleanup_files(*file_paths):
     for path in file_paths:
         if os.path.exists(path):
@@ -75,6 +75,8 @@ def cleanup_files(*file_paths):
 
 def index():
     return render_template('index.html')
+
+
 
 # Search to blog route
 @app.route('/search-to-blog', methods=['POST'])
@@ -94,13 +96,12 @@ def search_to_blog():
 
         print(f"PDF generated: {pdf_filename}")
 
-        cleanup_files('response.tex')  # Cleanup the generated .tex file after compilation
         
         return jsonify({'blog_post': blog_content, 'pdf_filename': pdf_filename, 'references': urls})
     else:
         return jsonify({"error": "No URLs were found for the query."}), 404
 
-# Main
+# Driver Code
 if __name__ == '__main__':
     app.run(debug=True)
 

@@ -17,7 +17,7 @@ def get_response_from_openai_api(urls):
     global file_path
 
     # Construct the prompt text
-    prompt_text = "Write a detailed blog post about the following topic and reference these websites. The LaTeX Format should be used in your whole answer and please do not use or reference any pictures as your response will be directly fed into a .tex document. the output from this GPT- API call will directly be fed into a .tex file and then converted into a .pdf file so your answer should compile correctly without any editing from a human: " + ', '.join(urls)
+    prompt_text = "Write a detailed blog post about the following topic and reference these websites. The LaTeX Format should be used in your whole answer (do not include anything like 'this should be written in the .tex file ---> JUST return The .tex file') and please do not use or reference any pictures as your response will be directly fed into a .tex document. the output from this GPT- API call will directly be fed into a .tex file and then converted into a .pdf file so your answer should compile correctly without any editing from a human: " + ', '.join(urls)
     
     # Specify the file path (change according to your environment)
     file_path = config.response_path
@@ -25,10 +25,10 @@ def get_response_from_openai_api(urls):
     try:
         # Actual OpenAI API call
         response = openai.ChatCompletion.create(
-            model='gpt-4',
+            model='gpt-3.5-turbo',
             messages=[
                 {"role": "system", "content": "check prompt"},
-                {"role": "user", "content": prompt_text}
+                {"role": "user", "content": prompt_text }
             ]
         )
         
@@ -93,5 +93,60 @@ if __name__ == '__main__':
     print(f"PDF generated: {pdf_filename}")
 
 
-#     1 Introduction
-# The renowned philosopher Socrates once said, ”An unexamined life is not worth living.” An extension of this notion would propose that an unexamined world is not worth inhabiting. One of the numerous facets of this world that merit their thorough examination is the unparalleled beauty of Greece. Thankfully, website such as VisitGreece.gr have made this task notably easier, and that’s what we will be exploring throughout this blog post.
+# template = r"""\documentclass[11pt]{article}
+# \usepackage[utf8]{inputenc}
+# \usepackage{geometry}
+# \geometry{a4paper}
+# \usepackage{graphicx}
+# \usepackage{booktabs}
+# \usepackage{array}
+# \usepackage{verbatim}
+# \usepackage{subfig}
+# \usepackage{fancyhdr}
+# \usepackage{amsmath}
+# \usepackage{cite}
+# \usepackage{hyperref}
+# \usepackage{float}
+# \usepackage{natbib}
+# \usepackage{doi}
+
+# \title{Insert Your Title Here}
+# \author{Author Name\\
+# \small Institution Name}
+# \date{\today}
+
+# \begin{document}
+# \maketitle
+
+# \begin{abstract}
+# Your abstract text goes here.
+# \end{abstract}
+
+# \section{Introduction}
+# \label{sec:introduction}
+# Your introduction text goes here.
+
+# \section{Related Work}
+# \label{sec:relatedwork}
+# Discussion of related work in your area of research.
+
+# \section{Methodology}
+# \label{sec:methodology}
+# Describe your research methods here.
+
+# \section{Results}
+# \label{sec:results}
+# Present and discuss your research results here.
+
+# \section{Discussion}
+# \label{sec:discussion}
+# Discuss the implications of your findings here.
+
+# \section{Conclusion}
+# \label{sec:conclusion}
+# Your conclusion text goes here.
+
+# \bibliographystyle{unsrtnat}
+# \bibliography{references}
+
+# \end{document}"""
