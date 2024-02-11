@@ -1,18 +1,18 @@
 import requests
 import openai
-from bs4 import BeautifulSoup
 from flask import Flask, request, jsonify , render_template
-import requests
-import openai
-import requests
-import openai
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+from configuration import Config
+from response import compile_latex_to_pdf , get_response_from_openai_api
 
 
 
-# to runt he HTML script successful locally please use
-# python -m http.server
+# to runt he HTML script successful locally please u
 #http://localhost:8000
-
+# python -m http.server
 # THIS HERE IS THE CONNECTION TO THE SERVER
 # <script async src="https://cse.google.com/cse.js?cx=832500dcf903c4b58">
 # </script>
@@ -23,105 +23,22 @@ import openai
 
 
 # keys and shit
-openapi_key = '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'
-API_KEY = 'AIzaSyCw61Bkr1FDCh6axJm6wPU9mM8k4nNNuxE'
-CSE_ID = '832500dcf903c4b58'
-
-DEBUG_URL = 'https://en.wikipedia.org/wiki/Cattle'
 
 
+# Initialize Flask app
 
-# openai.api_key = openapi_key
-# def google_search(query, num_results=5):
-#     """Perform a Google Custom Search and return the top URLs."""
-#     try:
-#         response = requests.get(
-#             'https://www.googleapis.com/customsearch/v1',
-#             params={
-#                 'key': API_KEY,
-#                 'cx': CSE_ID,
-#                 'q': query,
-#                 'num': num_results
-#             }
-#         )
-#         response.raise_for_status()  # Raises an exception for HTTP errors
-#         search_results = response.json()
+config = Config()
 
-#         urls = [item['link'] for item in search_results.get('items', [])]
-#         return urls
-#     except Exception as e:
-#         print(f"An error occurred during Google Custom Search: {e}")
-#         return []
+app = Flask(__name__, template_folder=config.html_template)
 
-# def get_response_from_openai_api(urls):
-#     """Generate a blog post using OpenAI's GPT based on the provided URLs."""
-
-#     prompt_text = "Write a detailed blog post about the following topics and reference these websites: " + ', '.join(urls)
-
-#     try:
-#         response = openai.ChatCompletion.create(
-#             model='gpt-4',
-#             messages=[ 
-#                 {"role": "system", "content": "check prompt"},
-#                 {"role": "user", "content": prompt_text}
-#             ]
-#         )
-#         return response['choices'][0]['message']['content'] if response['choices'][0]['message'] else "No content received from API."
-
-#     except Exception as e:
-#         return f"An error occurred: {e}"
-
-# # Main function to execute the script
-# def main():
-#     query = "puppies"  # Example query
-#     urls = google_search(query)
-#     if urls:
-#         blog_content = get_response_from_openai_api(urls)
-#         print("Generated Blog Post:\n", blog_content)
-#         print("\nReferences:")
-#         for url in urls:
-#             print(url)
-#     else:
-#         print("No URLs were found for the query.")
-
-# if __name__ == '__main__':
-#     main()
-
-# # Below is the Flask app code, commented out for future use.
-# '''
-# from flask import Flask, jsonify, request
-
-# app = Flask(__name__)
-
-# @app.route('/search-to-blog', methods=['POST'])
-# def search_to_blog():
-#     # Your Flask app code here for future use
-#     pass
-
-# if __name__ == '__main__':
-#     app.run(debug=True)
-# '''
-
-
-
-
-
-
-
-# Import necessary libraries
-import requests
-import openai
-
-openai.api_key = openapi_key
-app = Flask(__name__ , template_folder='/Users/panoskolyvakis/vsprojects/blogGenerator/templates')
+# Function to perform Google Custom Search and return URLs
 def google_search(query, num_results=5):
-    """Perform a Google Custom Search and return the top URLs."""
     try:
         response = requests.get(
             'https://www.googleapis.com/customsearch/v1',
             params={
-                'key': API_KEY,
-                'cx': CSE_ID,
+                'key': config.google_API_KEY,
+                'cx': config.google_CSE_ID,
                 'q': query,
                 'num': num_results
             }
@@ -136,28 +53,30 @@ def google_search(query, num_results=5):
         print(f"An error occurred during Google Custom Search: {e}")
         return []
 
-def get_response_from_openai_api(urls):
-    """Generate a blog post using OpenAI's GPT based on the provided URLs."""
+            
 
-    prompt_text = "Write a detailed blog post about the following topic and reference these websites. The LaTex Format should be used in your whole answer: " + ', '.join(urls)
-
+# Function to compile LaTeX to PDF
+def compile_latex_to_pdf_alternative():
     try:
-        response = openai.ChatCompletion.create(
-            model='gpt-4',
-            messages=[ 
-                {"role": "system", "content": "check prompt"},
-                {"role": "user", "content": prompt_text}
-            ]
-        )
-        return response['choices'][0]['message']['content'] if response['choices'][0]['message'] else "No content received from API."
-
+        os.system("pdflatex response.tex")  
+        return "response.pdf"  
     except Exception as e:
-        return f"An error occurred: {e}"
+        return f"An error occurred during LaTeX compilation: {e}"
 
+# Function to delete files
+def cleanup_files(*file_paths):
+    for path in file_paths:
+        if os.path.exists(path):
+            os.remove(path)
+            print(f"Deleted {path}")
+
+# Index route
 @app.route('/')
+
 def index():
     return render_template('index.html')
 
+# Search to blog route
 @app.route('/search-to-blog', methods=['POST'])
 def search_to_blog():
     data = request.get_json()
@@ -167,18 +86,24 @@ def search_to_blog():
 
     urls = google_search(query)
     if urls:
-        blog_content = get_response_from_openai_api(urls)
-        return jsonify({'blog_post': blog_content, 'references': urls})
+        # Generate blog content for display using URLs
+        blog_content = get_response_from_openai_api(urls) 
+
+        file_path = config.response_path
+        pdf_filename = compile_latex_to_pdf(file_path)
+
+        print(f"PDF generated: {pdf_filename}")
+
+        cleanup_files('response.tex')  # Cleanup the generated .tex file after compilation
+        
+        return jsonify({'blog_post': blog_content, 'pdf_filename': pdf_filename, 'references': urls})
     else:
         return jsonify({"error": "No URLs were found for the query."}), 404
 
+# Main
 if __name__ == '__main__':
     app.run(debug=True)
-#
-#
-#
-#
-#
 
+    
 
 

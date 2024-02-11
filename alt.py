@@ -4,6 +4,10 @@ from bs4 import BeautifulSoup
 from flask import Flask, request, jsonify , render_template
 import requests
 import openai
+import requests
+import openai
+
+
 
 # to runt he HTML script successful locally please use
 # python -m http.server
@@ -18,16 +22,7 @@ import openai
 # pkill -f 'python -m http.server'
 
 
-# keys and shit
-openapi_key = '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'
-API_KEY = 'AIzaSyCw61Bkr1FDCh6axJm6wPU9mM8k4nNNuxE'
-CSE_ID = '832500dcf903c4b58'
 
-DEBUG_URL = 'https://en.wikipedia.org/wiki/Cattle'
-
-
-import requests
-import openai
 
 # openai.api_key = openapi_key
 # def google_search(query, num_results=5):
@@ -89,7 +84,7 @@ import openai
 # '''
 # from flask import Flask, jsonify, request
 
-# app = Flask(__name__)1ç
+# app = Flask(__name__)
 
 # @app.route('/search-to-blog', methods=['POST'])
 # def search_to_blog():
@@ -107,12 +102,11 @@ import openai
 
 
 # Import necessary libraries
-from flask import send_from_directory
 import requests
 import openai
 
 openai.api_key = openapi_key
-app = Flask(__name__)
+app = Flask(__name__ , template_folder='/Users/panoskolyvakis/vsprojects/blogGenerator/templates')
 def google_search(query, num_results=5):
     """Perform a Google Custom Search and return the top URLs."""
     try:
@@ -135,14 +129,10 @@ def google_search(query, num_results=5):
         print(f"An error occurred during Google Custom Search: {e}")
         return []
 
-@app.route('/pdfs/<filename>')
-def serve_pdf(filename):
-    directory = "/Users/panoskolyvakis/Vsprojects/blogGenerator/docs/"
-    return send_from_directory(directory, filename)
 def get_response_from_openai_api(urls):
     """Generate a blog post using OpenAI's GPT based on the provided URLs."""
 
-    prompt_text = "Write a detailed blog post about the following topics and reference these websites: " + ', '.join(urls)
+    prompt_text = "Write a detailed blog post about the following topic and reference these websites. The LaTex Format should be used in your whole answer: " + ', '.join(urls)
 
     try:
         response = openai.ChatCompletion.create(
@@ -182,5 +172,6 @@ if __name__ == '__main__':
 #
 #
 #
+
 
 
