@@ -5,76 +5,101 @@
     <title>AI Document Writer</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
         body {
-            background-image: url(static/robot.png);
-            background-size: 70%;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-            background-position: center center;
-            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Roboto', sans-serif; /* Stylish font */
+        }
+        .container {
+            display: flex;
+            width: 100%; 
+            height: 100%;
+        }
+        .left, .right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Align content to start */
+        }
+        .left {
+            padding-top: 4%; /* Move content down */
+            background: url(static/robot.png) center center / cover no-repeat, #444; /* Background image with overlay */
+            color: white;
             text-align: center;
-            color: white;
         }
-        h1 {
-            color: white;
+        .right {
+            background-color: #666; /* Slightly lighter background */
+            overflow-y: auto; /* Enables scrolling on the right side */
+            display: flex;
+            align-items: center; /* Center iframe horizontally */
+            justify-content: center; /* Center iframe vertically */
         }
-        form {
-            margin: 0 auto;
-            width: 50%;
+        h1, form, #blogPost {
+            width: 100%;
         }
         input[type="text"], select, button {
             font-size: 1.2em;
             margin: 10px 0;
         }
-        #blogPost {
-            margin-top: 20px;
+        #pdfViewer iframe {
+            width: 100%; /* Adjust width of PDF viewer */
+            height: 100vh; /* Adjust height */
+            border: none; /* Removes border */
         }
     </style>
 </head>
 <body>
-    <h1>AI Document Writer</h1>
-    <form id="searchForm">
-        <input type="text" id="searchQuery" placeholder="Enter search query">
-        <select id="writingStyle" name="writingStyle">
-            <option value="scientific">Scientific Writing</option>
-            <option value="casual">Casual Writing</option>
-            <option value="business">Business Writing</option>
-        </select>
-        <button type="submit">Search</button>
-    </form>
-    <div id="blogPost"></div>
+    <div class="container">
+        <div class="left">
+            <h1>AI Document LaTeX Writer</h1>
+            <form id="searchForm">
+                <input type="text" id="searchQuery" placeholder="Enter search query">
+                <select id="writingStyle" name="writingStyle">
+                    <option value="scientific">Scientific Writing</option>
+                    <option value="casual">Casual Writing</option>
+                    <option value="business">Business Writing</option>
+                </select>
+                <button type="submit">Search</button>
+            </form>
+            <div id="blogPost"></div>
+        </div>
+        <div class="right" id="pdfViewer">
+            <!-- Initially load a placeholder PDF document -->
+            <iframe src="static/docs/initial.pdf"></iframe>
+        </div>
+    </div>
 
     <script>
-    $(document).ready(function() {
-        $('#searchForm').submit(function(event) {
-            event.preventDefault();
-            var query = $('#searchQuery').val();
-            var writingStyle = $('#writingStyle').val();
-            $.ajax({
-                type: "POST",
-                url: "/search-to-blog",
-                contentType: "application/json",
-                data: JSON.stringify({ "query": query, "style": writingStyle }),
-                success: function(response) {
-                    $('#blogPost').html('<h2>Blog Post</h2>' + response.blog_post + '<h3>References</h3><ul>' + response.references.map(function(url) {
-                        return '<li><a href="' + url + '" target="_blank">' + url + '</a></li>';
-                    }).join('') + '</ul>');
-                    var pdfLink = $('<a/>', {
-                        'href': '/download-pdf?filename=' + response.pdf_filename,
-                        'text': 'Download PDF',
-                        'download': response.pdf_filename
-                    });
-                    $('#blogPost').append(pdfLink);
-                },
-                error: function(error) {
-                    console.log(error);
-                    $('#blogPost').html('<p>An error occurred</p>');
-                }
-                
+        $(document).ready(function() {
+            $('#searchForm').submit(function(event) {
+                event.preventDefault();
+                var query = $('#searchQuery').val();
+                var writingStyle = $('#writingStyle').val();
+                $.ajax({
+                    type: "POST",
+                    url: "/search-to-blog",
+                    contentType: "application/json",
+                    data: JSON.stringify({ "query": query, "style": writingStyle }),
+                    success: function(response) {
+                        $('#blogPost').html('<h2>Blog Post</h2>' + response.blog_post + '<h3>References</h3><ul>' + response.references.map(function(url) {
+                            return '<li><a href="' + url + '" target="_blank">' + url + '</a></li>';
+                        }).join('') + '</ul>');
+    
+                        // Update the iframe source to display the PDF
+                        $('#pdfViewer > iframe').attr('src', '/download-pdf/' + response.pdf_filename);
+                    },
+                    error: function(error) {
+                        console.log(error);
+                        $('#blogPost').html('<p>An error occurred</p>');
+                    }
+                });
             });
         });
-    });
     </script>
 </body>
 </html>

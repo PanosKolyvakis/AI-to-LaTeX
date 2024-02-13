@@ -5,54 +5,41 @@ from configuration import Config
 import subprocess
 
 
+# Initialize configuration and OpenAI API key
 config = Config()
-
-file_path = config.response_path
 openai.api_key = config.openapi_key
 
-
-
-''''this function gets the response from the API'''
+# This function gets the response from the OpenAI API and saves it as a .tex file
 def get_response_from_openai_api(urls):
-    global file_path
-
     # Construct the prompt text
-    prompt_text = "Write a detailed blog post about the following topic and reference these websites. The LaTeX Format should be used in your whole answer (do not include anything like 'this should be written in the .tex file ---> JUST return The .tex file') and please do not use or reference any pictures as your response will be directly fed into a .tex document. the output from this GPT- API call will directly be fed into a .tex file and then converted into a .pdf file so your answer should compile correctly without any editing from a human: " + ', '.join(urls)
+    prompt_text = "Write a detailed blog post about the following topic and reference these websites. The LaTeX Format should be used in your whole answer (do not include anything like 'this should be written in the .tex file ---> JUST return The .tex file') and please do not use or reference any pictures as your response will be directly fed into a .tex document. The output from this GPT-API call will directly be fed into a .tex file and then converted into a .pdf file so your answer should compile correctly without any editing from a human: " + ', '.join(urls)
     
-    # Specify the file path (change according to your environment)
-    file_path = config.response_path
-    
+    # Corrected file path to save the .tex document
+    tex_file_path = 'static/docs/response.tex'
     try:
         # Actual OpenAI API call
         response = openai.ChatCompletion.create(
             model='gpt-3.5-turbo',
             messages=[
                 {"role": "system", "content": "check prompt"},
-                {"role": "user", "content": prompt_text }
+                {"role": "user", "content": prompt_text}
             ]
         )
         
-        final = response['choices'][0]['message']['content'] if response['choices'][0]['message'] else "No content received from API."
-        
-        # Debugging: Print the content to be written to the file
-        print("Content to be written to the file:")
-        print(final)
+        final = response.choices[0].message.content if response.choices[0].message else "No content received from API."
         
         # Ensure the directory exists
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        os.makedirs(os.path.dirname(tex_file_path), exist_ok=True)
         
-        # Write content to the file
-        with open(file_path, 'w') as file:
+        # Write content to the .tex file
+        with open(tex_file_path, 'w') as file:
             file.write(final)
         print('GPT response written in directory')
     
     except Exception as e:
-
         print(f"An error occurred: {e}")
 
-
-
-
+# This function compiles the .tex document into a .pdf file
 def compile_latex_to_pdf(tex_file):
     try:
         # Ensure the directory exists
@@ -68,10 +55,10 @@ def compile_latex_to_pdf(tex_file):
 
         # Change to the directory of the tex_file to ensure pdflatex runs correctly
         os.chdir(os.path.dirname(tex_file))
-        
+
         # Run pdflatex command with nonstopmode option to ignore errors
         subprocess.run(['pdflatex', '-interaction=nonstopmode', tex_file])
-        
+
         # Verify PDF generation
         if os.path.exists(pdf_filename):
             print(f"PDF successfully generated: {pdf_filename}")
@@ -81,15 +68,13 @@ def compile_latex_to_pdf(tex_file):
     except Exception as e:
         return f"An error occurred during LaTeX compilation: {e}"
 
-
-
 if __name__ == '__main__':
 
     urls = ['https://www.visitgreece.gr']
     get_response_from_openai_api(urls)
     file_path = config.response_path
     pdf_filename = compile_latex_to_pdf(file_path)
-
+    subprocess.run(["open" , pdf_filename])
     print(f"PDF generated: {pdf_filename}")
 
 
