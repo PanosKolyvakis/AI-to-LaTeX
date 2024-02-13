@@ -1,5 +1,85 @@
-
 <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Document Writer</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css">
+    <style>
+        body {
+            background-image: url(static/robot.png);
+            background-size: 70%;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-color: #f0f0f0;
+            text-align: center;
+            color: white;
+        }
+        h1 {
+            color: white;
+        }
+        form {
+            margin: 0 auto;
+            width: 50%;
+        }
+        input[type="text"], select, button {
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+        #blogPost {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Document Writer</h1>
+    <form id="searchForm">
+        <input type="text" id="searchQuery" placeholder="Enter search query">
+        <select id="writingStyle" name="writingStyle">
+            <option value="scientific">Scientific Writing</option>
+            <option value="casual">Casual Writing</option>
+            <option value="business">Business Writing</option>
+        </select>
+        <button type="submit">Search</button>
+    </form>
+    <div id="blogPost"></div>
+
+    <script>
+    $(document).ready(function() {
+        $('#searchForm').submit(function(event) {
+            event.preventDefault();
+            var query = $('#searchQuery').val();
+            var writingStyle = $('#writingStyle').val();
+            $.ajax({
+                type: "POST",
+                url: "/search-to-blog",
+                contentType: "application/json",
+                data: JSON.stringify({ "query": query, "style": writingStyle }),
+                success: function(response) {
+                    $('#blogPost').html('<h2>Blog Post</h2>' + response.blog_post + '<h3>References</h3><ul>' + response.references.map(function(url) {
+                        return '<li><a href="' + url + '" target="_blank">' + url + '</a></li>';
+                    }).join('') + '</ul>');
+                    var pdfLink = $('<a/>', {
+                        'href': '/download-pdf?filename=' + response.pdf_filename,
+                        'text': 'Download PDF',
+                        'download': response.pdf_filename
+                    });
+                    $('#blogPost').append(pdfLink);
+                },
+                error: function(error) {
+                    console.log(error);
+                    $('#blogPost').html('<p>An error occurred</p>');
+                }
+                
+            });
+        });
+    });
+    </script>
+</body>
+</html>
+
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -31,6 +111,11 @@
         #blogPost {
             margin-top: 20px;
         }
+        #pdfViewer {
+            height: 600px; /* Adjust height as needed */
+            overflow: auto;
+            border: 1px solid #ccc;
+        }
     </style>
 </head>
 <body>
@@ -45,6 +130,7 @@
         <button type="submit">Search</button>
     </form>
     <div id="blogPost"></div>
+    <div id="pdfViewer"></div>
 
     <script>
     $(document).ready(function() {
@@ -58,18 +144,23 @@
                 contentType: "application/json",
                 data: JSON.stringify({ "query": query, "style": writingStyle }),
                 success: function(response) {
-                    // Display blog post content and references
                     $('#blogPost').html('<h2>Blog Post</h2>' + response.blog_post + '<h3>References</h3><ul>' + response.references.map(function(url) {
                         return '<li><a href="' + url + '" target="_blank">' + url + '</a></li>';
                     }).join('') + '</ul>');
-
-                    // Trigger PDF download
-                    var pdfLink = $('<a/>', {
-                        'href': '/download-pdf?filename=' + response.pdf_filename,
-                        'text': 'Download PDF',
-                        'download': response.pdf_filename
+                    
+                    // Construct the path to the local PDF file
+                    var pdfPath = '/Users/panoskolyvakis/vsprojects/bloggenerator/docs/response.pdf';
+                    
+                    // Create an iframe element to display the PDF
+                    var pdfViewer = $('<iframe>', {
+                        src: pdfPath,
+                        width: '100%',
+                        height: '100%',
+                        style: 'border: none;'
                     });
-                    $('#blogPost').append(pdfLink);
+                    
+                    // Clear previous content and append the iframe
+                    $('#pdfViewer').empty().append(pdfViewer);
                 },
                 error: function(error) {
                     console.log(error);
@@ -80,86 +171,6 @@
     });
     </script>
 </body>
-</html>
+</html> -->
 
 
-
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Your Application's Name</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css">
-    <style>
-        body {
-            background-image: url(static/robot.png);
-            background-size: 70%;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-            background-position: center center;
-            background-color: #f0f0f0;
-            text-align: center;
-            color: white;
-        }
-        h1 {
-            color: white;
-        }
-        form {
-            margin: 0 auto;
-            width: 50%;
-        }
-        input[type="text"], select, button {
-            font-size: 1.2em;
-            margin: 10px 0;
-        }
-        #blogPost, #pdfViewer {
-            margin-top: 20px;
-        }
-        #pdfViewer iframe {
-            width: 70%; /* Adjust width as necessary */
-            height: 500px; /* Adjust height as you see fit */
-            border: none; /* Removes the default iframe border */
-        }
-    </style>
-</head>
-<body>
-    <h1>AI BlogWriter</h1>
-    <form id="searchForm">
-        <input type="text" id="searchQuery" placeholder="Enter search query">
-        <select id="writingStyle" name="writingStyle">
-            <option value="scientific">Scientific Writing</option>
-            <option value="casual">Casual Writing</option>
-            <option value="business">Business Writing</option>
-        </select>
-        <button type="submit">Search</button>
-    </form>
-    <div id="blogPost"></div>
-    <div id="pdfViewer"></div> <!-- Container for the PDF viewer -->
-
-    <script>
-        $(document).ready(function() {
-            $('#searchForm').submit(function(event) {
-                event.preventDefault();
-                var query = $('#searchQuery').val();
-                var writingStyle = $('#writingStyle').val();
-                $.ajax({
-                    type: "POST",
-                    url: "/search-to-blog",
-                    contentType: "application/json",
-                    data: JSON.stringify({ "query": query, "style": writingStyle }),
-                    success: function(response) {
-                        // Assuming response.pdf_filename is just the filename like 'response.pdf'
-                        var pdfPath = `/pdfs/${response.pdf_filename}`; // Adjust this path based on your Flask routing
-                        $('#pdfViewer').html(`<iframe src="${pdfPath}" style="width:100%; height:500px;" frameborder="0"></iframe>`);
-                    },
-                    error: function(error) {
-                        console.log(error);
-                        $('#blogPost').html('<p>An error occurred</p>');
-                    }
-                });
-            });
-        });
-        </script> -->
-</body>
-</html>
