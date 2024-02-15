@@ -41,3 +41,20 @@ pip install -r requirements.txt
 ## Configuration
 
 http://localhost:5000
+
+
+NOTE: 
+to initialize the prohect you need to add a configuration.py file with the following script:
+```
+class Config:
+    def __init__(self):
+        self.response_path = 'static/docs/response.tex'
+        self.openapi_key = 'fromAPIkey'
+        self.google_API_KEY = 'fromGoogleCustomSearchEnginges'
+        self.google_CSE_ID = 'fromGoogleCustomSearchEnginges'
+        self.DEBUG_URL = 'https://en.wikipedia.org/wiki/Cattle'
+        self.html_template= 'templates'
+        self.tex_file = 'static/docs/response.tex'
+
+        ```
+alternatively you can add variables to your path
