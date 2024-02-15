@@ -5,7 +5,6 @@
     <title>AI Document Writer</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
         body {
@@ -13,31 +12,31 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
-            font-family: 'Roboto', sans-serif; /* Stylish font */
+            font-family: 'Roboto', sans-serif;
         }
         .container {
             display: flex;
-            width: 100%; 
+            width: 100%;
             height: 100%;
         }
         .left, .right {
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start; /* Align content to start */
+            justify-content: flex-start;
         }
         .left {
-            padding-top: 4%; /* Move content down */
-            background: url(static/robot.png) center center / cover no-repeat, #444; /* Background image with overlay */
+            padding-top: 4%;
+            background: url(static/robot.png) center center / cover no-repeat, #444;
             color: white;
             text-align: center;
         }
         .right {
-            background-color: #666; /* Slightly lighter background */
-            overflow-y: auto; /* Enables scrolling on the right side */
+            background-color: #666;
+            overflow-y: auto;
             display: flex;
-            align-items: center; /* Center iframe horizontally */
-            justify-content: center; /* Center iframe vertically */
+            align-items: center;
+            justify-content: center;
         }
         h1, form, #blogPost {
             width: 100%;
@@ -47,9 +46,9 @@
             margin: 10px 0;
         }
         #pdfViewer iframe {
-            width: 100%; /* Adjust width of PDF viewer */
-            height: 100vh; /* Adjust height */
-            border: none; /* Removes border */
+            width: 100%;
+            height: 100vh;
+            border: none;
         }
     </style>
 </head>
@@ -64,138 +63,185 @@
                     <option value="casual">Casual Writing</option>
                     <option value="business">Business Writing</option>
                 </select>
-                <button type="submit">Search</button>
+                <button type="button" id="searchButton">Search</button>
             </form>
             <div id="blogPost"></div>
         </div>
         <div class="right" id="pdfViewer">
-            <!-- Initially load a placeholder PDF document -->
             <iframe src="static/docs/initial.pdf"></iframe>
         </div>
     </div>
 
-    <script>
-        $(document).ready(function() {
-            $('#searchForm').submit(function(event) {
-                event.preventDefault();
-                var query = $('#searchQuery').val();
-                var writingStyle = $('#writingStyle').val();
-                $.ajax({
-                    type: "POST",
-                    url: "/search-to-blog",
-                    contentType: "application/json",
-                    data: JSON.stringify({ "query": query, "style": writingStyle }),
-                    success: function(response) {
-                        $('#blogPost').html('<h2>Blog Post</h2>' + response.blog_post + '<h3>References</h3><ul>' + response.references.map(function(url) {
-                            return '<li><a href="' + url + '" target="_blank">' + url + '</a></li>';
-                        }).join('') + '</ul>');
-    
-                        // Update the iframe source to display the PDF
-                        $('#pdfViewer > iframe').attr('src', '/download-pdf/' + response.pdf_filename);
-                    },
-                    error: function(error) {
-                        console.log(error);
-                        $('#blogPost').html('<p>An error occurred</p>');
-                    }
-                });
-            });
-        });
-    </script>
-</body>
-</html>
-
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Your Application's Name</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css">
-    <style>
-        body {
-            background-image: url(static/robot.png);
-            background-size: 70%;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-            background-position: center center;
-            background-color: #f0f0f0;
-            text-align: center;
-            color: white;
-        }
-        h1 {
-            color: white;
-        }
-        form {
-            margin: 0 auto;
-            width: 50%;
-        }
-        input[type="text"], select, button {
-            font-size: 1.2em;
-            margin: 10px 0;
-        }
-        #blogPost {
-            margin-top: 20px;
-        }
-        #pdfViewer {
-            height: 600px; /* Adjust height as needed */
-            overflow: auto;
-            border: 1px solid #ccc;
-        }
-    </style>
-</head>
-<body>
-    <h1>AI BlogWriter</h1>
-    <form id="searchForm">
-        <input type="text" id="searchQuery" placeholder="Enter search query">
-        <select id="writingStyle" name="writingStyle">
-            <option value="scientific">Scientific Writing</option>
-            <option value="casual">Casual Writing</option>
-            <option value="business">Business Writing</option>
-        </select>
-        <button type="submit">Search</button>
-    </form>
-    <div id="blogPost"></div>
-    <div id="pdfViewer"></div>
-
-    <script>
+<script>
     $(document).ready(function() {
-        $('#searchForm').submit(function(event) {
-            event.preventDefault();
+        $('#searchButton').click(function() {
             var query = $('#searchQuery').val();
             var writingStyle = $('#writingStyle').val();
+
             $.ajax({
                 type: "POST",
                 url: "/search-to-blog",
                 contentType: "application/json",
                 data: JSON.stringify({ "query": query, "style": writingStyle }),
                 success: function(response) {
-                    $('#blogPost').html('<h2>Blog Post</h2>' + response.blog_post + '<h3>References</h3><ul>' + response.references.map(function(url) {
-                        return '<li><a href="' + url + '" target="_blank">' + url + '</a></li>';
-                    }).join('') + '</ul>');
-                    
-                    // Construct the path to the local PDF file
-                    var pdfPath = '/Users/panoskolyvakis/vsprojects/bloggenerator/docs/response.pdf';
-                    
-                    // Create an iframe element to display the PDF
-                    var pdfViewer = $('<iframe>', {
-                        src: pdfPath,
-                        width: '100%',
-                        height: '100%',
-                        style: 'border: none;'
-                    });
-                    
-                    // Clear previous content and append the iframe
-                    $('#pdfViewer').empty().append(pdfViewer);
+                    checkPdfReady('response.pdf', 12);
                 },
-                error: function(error) {
-                    console.log(error);
-                    $('#blogPost').html('<p>An error occurred</p>');
+                error: function(xhr, status, error) {
+                    console.error("Error: ", status, " ", error);
                 }
             });
         });
     });
-    </script>
+
+    function checkPdfReady(filename, attemptsLeft) {
+        if (attemptsLeft <= 0) {
+            console.error("PDF generation timed out.");
+            return;
+        }
+
+        $.ajax({
+            type: "GET",
+            url: "/pdf-ready/" + filename,
+            success: function(response) {
+                if (response.ready) {
+                    var timestamp = new Date().getTime();
+                    $('iframe').attr('src', '/static/docs/' + filename + '?' + timestamp);
+                } else {
+                    setTimeout(function() {
+                        checkPdfReady(filename, attemptsLeft - 1);
+                    }, 5000);
+                }
+            },
+            error: function() {
+                console.error("Error checking PDF readiness.");
+                setTimeout(function() {
+                    checkPdfReady(filename, attemptsLeft - 1);
+                }, 5000);
+            }
+        });
+    }
+</script>
 </body>
-</html> -->
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// <!-- <script>
+//      $(document).ready(function() {
+//          $('#searchForm').submit(function(event) {
+//              event.preventDefault(); // Prevent the form from submitting normally
+//              var query = $('#searchQuery').val();
+//              var writingStyle = $('#writingStyle').val();             // Make the AJAX POST request
+//              $.ajax({
+//                  type: "POST",
+//                  url: "/search-to-blog",
+//                  contentType: "application/json",
+//                  data: JSON.stringify({ "query": query, "style": writingStyle }),
+//                  // We won't handle success or error differently in terms of PDF loading
+//              });             // Wait for 30 seconds after making the AJAX request, then update the PDF viewer
+//              setTimeout(function() {
+//                  var d = new Date();                 var n = d.getTime();
+//                  $('iframe').attr('src', '/static/docs/response.pdf?'+ n);
+//              }, 30000);
+//          });
+//      }); -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
