@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Document Writer</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+        }
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+        .left, .right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        .left {
+            padding-top: 4%;
+            background: url(static/robot.png) center center / cover no-repeat, #444;
+            color: white;
+            text-align: center;
+        }
+        .right {
+            background-color: #666;
+            overflow-y: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        h1, form, #blogPost {
+            width: 100%;
+        }
+        input[type="text"], select, button {
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+        #pdfViewer iframe {
+            width: 100%;
+            height: 100vh;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left">
+            <h1>AI Document LaTeX Writer</h1>
+            <form id="searchForm">
+                <input type="text" id="searchQuery" placeholder="Enter search query">
+                <select id="writingStyle" name="writingStyle">
+                    <option value="scientific">Scientific Writing</option>
+                    <option value="casual">Casual Writing</option>
+                    <option value="business">Business Writing</option>
+                </select>
+                <button type="button" id="searchButton">Search</button>
+            </form>
+            <div id="blogPost"></div>
+        </div>
+        <div class="right" id="pdfViewer">
+            <iframe src="static/docs/initial.pdf"></iframe>
+        </div>
+    </div>
+
+<script>
+    $(document).ready(function() {
+        $('#searchButton').click(function() {
+            var query = $('#searchQuery').val();
+            var writingStyle = $('#writingStyle').val();
+
+            $.ajax({
+                type: "POST",
+                url: "/search-to-blog",
+                contentType: "application/json",
+                data: JSON.stringify({ "query": query, "style": writingStyle }),
+                success: function(response) {
+                    checkPdfReady('response.pdf', 12);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error: ", status, " ", error);
+                }
+            });
+        });
+    });
+
+    function checkPdfReady(filename, attemptsLeft) {
+        if (attemptsLeft <= 0) {
+            console.error("PDF generation timed out.");
+            return;
+        }
+
+        $.ajax({
+            type: "GET",
+            url: "/pdf-ready/" + filename,
+            success: function(response) {
+                if (response.ready) {
+                    var timestamp = new Date().getTime();
+                    $('iframe').attr('src', '/static/docs/' + filename + '?' + timestamp);
+                } else {
+                    setTimeout(function() {
+                        checkPdfReady(filename, attemptsLeft - 1);
+                    }, 5000);
+                }
+            },
+            error: function() {
+                console.error("Error checking PDF readiness.");
+                setTimeout(function() {
+                    checkPdfReady(filename, attemptsLeft - 1);
+                }, 5000);
+            }
+        });
+    }
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// <!-- <script>
+//      $(document).ready(function() {
+//          $('#searchForm').submit(function(event) {
+//              event.preventDefault(); // Prevent the form from submitting normally
+//              var query = $('#searchQuery').val();
+//              var writingStyle = $('#writingStyle').val();             // Make the AJAX POST request
+//              $.ajax({
+//                  type: "POST",
+//                  url: "/search-to-blog",
+//                  contentType: "application/json",
+//                  data: JSON.stringify({ "query": query, "style": writingStyle }),
+//                  // We won't handle success or error differently in terms of PDF loading
+//              });             // Wait for 30 seconds after making the AJAX request, then update the PDF viewer
+//              setTimeout(function() {
+//                  var d = new Date();                 var n = d.getTime();
+//                  $('iframe').attr('src', '/static/docs/response.pdf?'+ n);
+//              }, 30000);
+//          });
+//      }); -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
