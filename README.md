@@ -56,5 +56,5 @@ class Config:
         self.html_template= 'templates'
         self.tex_file = 'static/docs/response.tex'
 
-        ```
+```
 alternatively you can add variables to your path
