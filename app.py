@@ -7,6 +7,8 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from configuration import Config
 from response import compile_latex_to_pdf, get_response_from_openai_api , google_search
+from LaTeXprocessing import LaTeX_templates
+
 
 # Get the Config Correct
 config = Config()
@@ -22,6 +24,12 @@ def search_to_blog():
 
     print(data)
     query = data.get('query')
+    template = data.get('template')
+    print(template)
+    name = data.get('name')
+    date = data.get('date')
+    title = data.get('title')
+    details = [name, date, title]
     if not query:
         return jsonify({"error": "No query provided"}), 400
 
@@ -29,8 +37,9 @@ def search_to_blog():
     print(urls if urls else 'no URL FOUND')
 
     if urls:
+        template_to_use = LaTeX_templates[template]
         # Generate blog content for display using URLs
-        get_response_from_openai_api(urls)
+        get_response_from_openai_api(urls , template_to_use , details = details)
         
         # Adjust the path for saving the .tex file within 'static/docs'
         tex_filename = 'response.tex'

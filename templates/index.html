@@ -1,3 +1,5 @@
+
+        
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,8 +43,13 @@
         h1, form, #blogPost {
             width: 100%;
         }
+        #additionalDetailsButton {
+            width: 200px; 
+            padding: 3px;
+            font-size: 0.9em;
+        }
         input[type="text"], select, button {
-            font-size: 1.2em;
+            font-size: 0.9em;
             margin: 10px 0;
         }
         #pdfViewer iframe {
@@ -50,6 +57,14 @@
             height: 100vh;
             border: none;
         }
+        #additionalDetailsForm {
+            display: none;
+            font-size: 0.9em;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 00px;
+        }
+
     </style>
 </head>
 <body>
@@ -58,13 +73,20 @@
             <h1>AI Document LaTeX Writer</h1>
             <form id="searchForm">
                 <input type="text" id="searchQuery" placeholder="Enter search query">
-                <select id="writingStyle" name="writingStyle">
-                    <option value="scientific">Scientific Writing</option>
-                    <option value="casual">Casual Writing</option>
-                    <option value="business">Business Writing</option>
+                <select id="templateUsed" name="templateUsed">
+                    <option value="scientific_document">Scientific Document</option>
+                    <option value="blogpost">Blogpost</option>
+                    <option value="review">Review</option>
                 </select>
                 <button type="button" id="searchButton">Search</button>
             </form>
+            <button type="button" id="additionalDetailsButton">Add Your Details</button>
+            <div id="additionalDetailsForm">
+                <input type="text" id="inputName" placeholder="Enter Name">
+                <input type="text" id="inputDate" placeholder="Enter Date">
+                <input type="text" id="inputTitle" placeholder="Enter Title">
+                <button type="button" id="submitDetails">Submit Details</button>
+            </div>
             <div id="blogPost"></div>
         </div>
         <div class="right" id="pdfViewer">
@@ -73,91 +95,76 @@
     </div>
 
 <script>
-    $(document).ready(function() {
-        $('#searchButton').click(function() {
-            var query = $('#searchQuery').val();
-            var writingStyle = $('#writingStyle').val();
+$(document).ready(function() {
+    $('#searchButton').click(function() {
+        var query = $('#searchQuery').val();
+        var templateUsed = $('#templateUsed').val();
+        var name = $('#inputName').val(); // Collect additional details
+        var date = $('#inputDate').val();
+        var title = $('#inputTitle').val();
 
-            $.ajax({
-                type: "POST",
-                url: "/search-to-blog",
-                contentType: "application/json",
-                data: JSON.stringify({ "query": query, "style": writingStyle }),
-                success: function(response) {
-                    checkPdfReady('response.pdf', 12);
-                },
-                error: function(xhr, status, error) {
-                    console.error("Error: ", status, " ", error);
-                }
-            });
+        $.ajax({
+            type: "POST",
+            url: "/search-to-blog",
+            contentType: "application/json",
+            data: JSON.stringify({
+                "query": query,
+                "template": templateUsed,
+                "name": name, // Send additional details
+                "date": date,
+                "title": title
+            }),
+            success: function(response) {
+                checkPdfReady('response.pdf', 12);
+            },
+            error: function(xhr, status, error) {
+                console.error("Error: ", status, " ", error);
+            }
         });
     });
 
-    function checkPdfReady(filename, attemptsLeft) {
-        if (attemptsLeft <= 0) {
-            console.error("PDF generation timed out.");
-            return;
-        }
+    // Show the form when the "Add Details" button is clicked
+    $('#additionalDetailsButton').click(function() {
+        $('#additionalDetailsForm').show();
+    });
 
-        $.ajax({
-            type: "GET",
-            url: "/pdf-ready/" + filename,
-            success: function(response) {
-                if (response.ready) {
-                    var timestamp = new Date().getTime();
-                    $('iframe').attr('src', '/static/docs/' + filename + '?' + timestamp);
-                } else {
-                    setTimeout(function() {
-                        checkPdfReady(filename, attemptsLeft - 1);
-                    }, 5000);
-                }
-            },
-            error: function() {
-                console.error("Error checking PDF readiness.");
+    // Optional: handle the "Submit Details" button click if needed
+    $('#submitDetails').click(function() {
+        // You can perform additional actions here if needed
+        $('#additionalDetailsForm').hide(); 
+    });
+});
+
+function checkPdfReady(filename, attemptsLeft) {
+    if (attemptsLeft <= 0) {
+        console.error("PDF generation timed out.");
+        return;
+    }
+
+    $.ajax({
+        type: "GET",
+        url: "/pdf-ready/" + filename,
+        success: function(response) {
+            if (response.ready) {
+                var timestamp = new Date().getTime();
+                $('iframe').attr('src', '/static/docs/' + filename + '?' + timestamp);
+            } else {
                 setTimeout(function() {
                     checkPdfReady(filename, attemptsLeft - 1);
                 }, 5000);
             }
-        });
-    }
+        },
+        error: function() {
+            console.error("Error checking PDF readiness.");
+            setTimeout(function() {
+                checkPdfReady(filename, attemptsLeft - 1);
+            }, 5000);
+        }
+    });
+}
 </script>
 </body>
-</html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// <!-- <script>
-//      $(document).ready(function() {
-//          $('#searchForm').submit(function(event) {
-//              event.preventDefault(); // Prevent the form from submitting normally
-//              var query = $('#searchQuery').val();
-//              var writingStyle = $('#writingStyle').val();             // Make the AJAX POST request
-//              $.ajax({
-//                  type: "POST",
-//                  url: "/search-to-blog",
-//                  contentType: "application/json",
-//                  data: JSON.stringify({ "query": query, "style": writingStyle }),
-//                  // We won't handle success or error differently in terms of PDF loading
-//              });             // Wait for 30 seconds after making the AJAX request, then update the PDF viewer
-//              setTimeout(function() {
-//                  var d = new Date();                 var n = d.getTime();
-//                  $('iframe').attr('src', '/static/docs/response.pdf?'+ n);
-//              }, 30000);
-//          });
-//      }); -->
+</html> 
 
 
 

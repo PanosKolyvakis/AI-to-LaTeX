@@ -6,6 +6,8 @@ import subprocess
 import requests
 import subprocess
 import os
+from LaTeXprocessing import LaTeX_templates
+
 
 # Initialize configuration and OpenAI API key
 config = Config()
@@ -34,10 +36,27 @@ def google_search(query, num_results=5):
         return []
 
 # This function gets the response from the OpenAI API and saves it as a .tex file
-def get_response_from_openai_api(urls):
-    # Construct the prompt text
-    prompt_text = "Write a detailed blog post about the following topic and reference these websites. The LaTeX Format should be used in your whole answer (do not include anything like 'this should be written in the .tex file ---> JUST return The .tex file') and please do not use or reference any pictures as your IMPORTANT : response will be directly fed into a .tex document. IMPORTANT NOTE: The output from this GPT-API call will directly be fed into a .tex file and then converted into a .pdf file so your answer should compile correctly without any editing from a human, use the simplest LaTeX format that you can find " + ', '.join(urls)
+# Populate {LaTex_temps[1]} and return 
+def get_response_from_openai_api(urls , template , details):
+    # Joining URLs with LaTeX newline for clarity in the prompt.
+    formatted_urls = " \\\\ ".join(urls)  # LaTeX newline between URLs for clarity.
     
+    # Construct the prompt text for the GPT API call.
+    prompt_text = (
+        "Generate a complete LaTeX document article on a specified topic. "
+        "The document should include a title, an abstract, sections for introduction, main content (with sub-sections as necessary), and a conclusion. "
+        "Incorporate references to the following URLs appropriately within the text, formatted according to LaTeX bibliography standards. "
+        "The output should be in valid .tex format, ready for direct compilation into PDF without any human editing. "
+        "Do not include any images or external dependencies not covered in basic LaTeX packages. "
+        "Here are the URLs to reference: " + formatted_urls + "\n\n"
+        "Please ensure the document starts with the \\documentclass{} command, followed by necessary \\usepackage commands, and is structured correctly for compilation. "
+        "End the document with \\end{document}. "
+        f"use the template: {template} and substitute the following details {details}"
+        "Note: The output will be directly used to generate a PDF; it must be fully compliant with LaTeX syntax and conventions."
+        
+
+    )
+    print(prompt_text)
     # Corrected file path to save the .tex document
     try:
         # Actual OpenAI API call
