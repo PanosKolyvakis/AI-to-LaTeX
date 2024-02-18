@@ -12,6 +12,7 @@ This project is a Flask-based web application that utilizes Google Custom Search
 
 You can find my BLOG on this project [here](https://panoskolyvakis.github.io/blog.html)
 
+*I would like to deploy this project (perhaps Heroku) on the web once finished
 ## Features
 
 - Google Custom Search to fetch relevant URLs based on user queries.
