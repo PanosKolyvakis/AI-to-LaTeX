@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify, render_template, send_from_directory,
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from configuration import Config
-from response import compile_latex_to_pdf, get_response_from_openai_api , google_search
+from response import compile_latex_to_pdf, get_response_from_openai_api , google_search , get_refined_doc
 from LaTeXprocessing import LaTeX_templates
 
 
@@ -83,6 +83,21 @@ def pdf_ready(filename):
         return jsonify({'ready': True})
     else:
         return jsonify({'ready': False})
+
+
+@app.route('/submit-refinement', methods=['POST'])
+def submit_refinement():
+    data = request.json
+    refinement_details = data.get('refinement_details')
+    get_refined_doc(refinement_details)
+    # Adjust the path for saving the .tex file within 'static/docs'
+    tex_filename = 'response.tex'
+    file_path_tex = os.path.join(app.static_folder, 'docs', tex_filename)
+    
+    # Assuming compile_latex_to_pdf takes the .tex path and saves the .pdf in the same directory
+    file_path_pdf = compile_latex_to_pdf(file_path_tex)
+    # Return the JSON response with blog content and PDF web path
+    return jsonify({'pdf_web_path': file_path_pdf})
 
 
 

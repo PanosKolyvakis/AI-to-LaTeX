@@ -6,12 +6,17 @@ import subprocess
 import requests
 import subprocess
 import os
-from LaTeXprocessing import LaTeX_templates
 
+#NON STANDARD packages :
+# Flask==3.0.2
+# requests==2.25.1
+# openai==0.28.0
 
 # Initialize configuration and OpenAI API key
 config = Config()
 openai.api_key = config.openapi_key
+tex_file_path = 'static/docs/response.tex'
+
 
 def google_search(query, num_results=5):
     print('Google Search initated')
@@ -73,7 +78,7 @@ def get_response_from_openai_api(urls , template , details):
         # # Ensure the directory exists
         # os.makedirs(os.path.dirname(tex_file_path), exist_ok=True)
         
-        tex_file_path = 'static/docs/response.tex'
+        
 
         # Write content to the .tex file
         with open(tex_file_path, 'w') as file:
@@ -84,6 +89,50 @@ def get_response_from_openai_api(urls , template , details):
         print(f"An error occurred: {e}")
 
 
+
+
+
+def get_refined_doc( user_input):
+
+    tex_file_path = 'static/docs/response.tex'
+    with open(tex_file_path, 'r') as tex_file:
+        tex_file = tex_file.read()
+        
+    # Construct the prompt text for the GPT API call.
+    prompt_text = (
+        f"Refine the following {tex_file} accirding to the following '{user_input}'"        
+        "The output should be in valid .tex format, ready for direct compilation into PDF without any human editing. "
+        "Do not include any images or external dependencies not covered in basic LaTeX packages."
+        "Please ensure the document starts with the \\documentclass{} command, followed by necessary \\usepackage commands, and is structured correctly for compilation. "
+        "begin the document with \\begin{document}. "
+        "End the document with \\end{document}. "
+        "Note: The output will be directly used to generate a PDF from tex; it must be fully compliant with LaTeX syntax and conventions and should not contain any delimeters (remove any that the user input may contain such as ```latex)."
+        
+
+    )
+    print('prompt fed into GPT:' + f'{prompt_text}')
+    # Corrected file path to save the .tex document
+    try:
+        # Actual OpenAI API call
+        response = openai.ChatCompletion.create(
+            model='gpt-3.5-turbo',
+            messages=[
+                {"role": "system", "content": "check prompt"},
+                {"role": "user", "content": prompt_text}
+            ]
+        )
+        final = response.choices[0].message.content if response.choices[0].message else "No content received from API."
+        
+        # # Ensure the directory exists
+        # os.makedirs(os.path.dirname(tex_file_path), exist_ok=True)
+        tex_file_path = 'static/docs/response.tex'
+        # Write content to the .tex file
+        with open(tex_file_path, 'w') as file:
+            file.write(final)
+        print('GPT response written in directory')
+    
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 

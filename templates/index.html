@@ -1,4 +1,208 @@
 
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Document Writer</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+        }
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+        .left, .right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        .left {
+            padding-top: 4%;
+            background: url(static/robot.png) center center / cover no-repeat, #444;
+            color: white;
+            text-align: center;
+        }
+        .right {
+            background-color: #666;
+            overflow-y: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        h1, form, #blogPost {
+            width: 100%;
+        }
+        #additionalDetailsButton, #refineButton {
+            width: 100px; 
+            padding: 3px;
+            font-size: 0.9em;
+            margin: 5px 0;
+            display:  table-row;
+        }
+        input[type="text"], select, button, textarea {
+            font-size: 0.9em;
+            margin: 10px 0;
+        }
+        #pdfViewer iframe {
+            width: 100%;
+            height: 100vh;
+            border: none;
+        }
+        #additionalDetailsForm, #refineSearchForm {
+            display: none;
+            font-size: 0.9em;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        #largeTextbox {
+            display: none; 
+            width: 70%; 
+            height: 40px; 
+        }
+        #submitRefinement {
+            
+            display: none; 
+            width: 20%;
+            height: 20px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="left">
+        <h1>AI Document LaTeX Writer</h1>
+        <form id="searchForm">
+            <input type="text" id="searchQuery" placeholder="Google search query">
+            <select id="templateUsed">
+                <option value="scientific_document">Scientific Document</option>
+                <option value="blogpost">Blogpost</option>
+                <option value="review">Review</option>
+            </select>
+            <button type="button" id="searchButton">Search</button>
+        </form>
+        <button type="button" id="additionalDetailsButton" style="display: block;">Add Details</button>
+        <div id="additionalDetailsForm" style="display: none;">
+            <input type="text" id="inputName" placeholder="Enter Name">
+            <input type="text" id="inputDate" placeholder="Enter Date">
+            <input type="text" id="inputTitle" placeholder="Enter Title">
+            <button type="button" id="submitDetails">Submit Details</button>
+        </form>
+        </div>
+        <button type="button" id="refineButton">Refine</button>
+        <textarea id="largeTextbox" style="display: none;"></textarea>
+        <button type="button" id="submitRefinement" style="display: none;">Submit Refinement</button>
+        </div>
+    </div>
+        </div>
+        <div class="right" id="pdfViewer">
+            <iframe src="static/docs/initial.pdf"></iframe>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Handle the search button click
+            $('#searchButton').click(function() {
+                var query = $('#searchQuery').val();
+                var templateUsed = $('#templateUsed').val();
+                var name = $('#inputName').val();
+                var date = $('#inputDate').val();
+                var title = $('#inputTitle').val();
+                $('#additionalDetailsButton, #refineButton').css('display', 'block');
+    
+                $.ajax({
+                    type: "POST",
+                    url: "/search-to-blog",
+                    contentType: "application/json",
+                    data: JSON.stringify({ query, template: templateUsed, name, date, title }),
+                    success: function(response) {
+                        checkPdfReady('response.pdf', 12);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error: ", status, " ", error);
+                    }
+                });
+            });
+    
+            // Handle the refine button click - Updated to toggle
+            $('#refineButton').click(function() {
+                $('#largeTextbox, #submitRefinement').toggle(); // Use toggle to show/hide
+            });
+    
+            // Handle the additional details button click - Updated to toggle
+            $('#additionalDetailsButton').click(function() {
+                $('#additionalDetailsForm').toggle(); // Use toggle to show/hide
+            });
+    
+            // Handle the submit details button click
+            $('#submitDetails').click(function() {
+                $('#additionalDetailsForm').hide();
+            });
+    
+            $('#submitRefinement').click(function() {
+                var refinementDetails = $('#largeTextbox').val();
+                $.ajax({
+                    type: "POST",
+                    url: "/submit-refinement",
+                    contentType: "application/json",
+                    data: JSON.stringify({ refinement_details: refinementDetails }),
+                    success: function(response) {
+                        console.log("Refinement submitted successfully:", response);
+    
+                        checkPdfReady('response.pdf', 12);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error submitting refinement:", status, " ", error);
+                    }
+                });
+                $('#largeTextbox, #submitRefinement').hide();
+            });
+        });
+    
+        function checkPdfReady(filename, attemptsLeft) {
+            if (attemptsLeft <= 0) {
+                console.error("PDF generation timed out.");
+                return;
+            }
+    
+            $.ajax({
+                type: "GET",
+                url: "/pdf-ready/" + filename,
+                success: function(response) {
+                    if (response.ready) {
+                        var timestamp = new Date().getTime();
+                        $('iframe').attr('src', '/static/docs/' + filename + '?' + timestamp);
+                    } else {
+                        setTimeout(function() { checkPdfReady(filename, attemptsLeft - 1); }, 5000);
+                    }
+                },
+                error: function() {
+                    console.error("Error checking PDF readiness.");
+                    setTimeout(function() { checkPdfReady(filename, attemptsLeft - 1); }, 5000);
+                }
+            });
+        }
+    </script>
+    
+    
+</body>
+</html>
+
+
+
+<!-- 
         
 <!DOCTYPE html>
 <html lang="en">
@@ -72,7 +276,7 @@
         <div class="left">
             <h1>AI Document LaTeX Writer</h1>
             <form id="searchForm">
-                <input type="text" id="searchQuery" placeholder="Enter search query">
+                <input type="text" id="searchQuery" placeholder="Goggle search query">
                 <select id="templateUsed" name="templateUsed">
                     <option value="scientific_document">Scientific Document</option>
                     <option value="blogpost">Blogpost</option>
@@ -87,6 +291,13 @@
                 <input type="text" id="inputTitle" placeholder="Enter Title">
                 <button type="button" id="submitDetails">Submit Details</button>
             </div>
+            <form id="searchForm">
+
+                <input type="checkbox" id="refineDoc" name="refineDoc">
+                <label for="refineDoc">Refine Document</label>
+                <button type="button" id="searchButton">Search</button>
+            </form>
+
             <div id="blogPost"></div>
         </div>
         <div class="right" id="pdfViewer">
@@ -110,7 +321,7 @@ $(document).ready(function() {
             data: JSON.stringify({
                 "query": query,
                 "template": templateUsed,
-                "name": name, // Send additional details
+                "name": name, 
                 "date": date,
                 "title": title
             }),
@@ -164,16 +375,7 @@ function checkPdfReady(filename, attemptsLeft) {
 }
 </script>
 </body>
-</html> 
-
-
-
-
-
-
-
-
-
+</html>  -->
 
 
 
