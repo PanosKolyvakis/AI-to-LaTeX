@@ -1,3 +1,29 @@
+"""
+This Flask web application interfaces with various services and tools to facilitate the creation of blog posts from search queries, leveraging LaTeX for document preparation and PDF generation. The application allows users to submit search queries, select templates, and automatically generate blog content, which is then compiled into a LaTeX document and rendered as a PDF. It features several endpoints to handle different aspects of the workflow, including submitting search queries, downloading generated PDFs, and refining document content.
+
+Features:
+- Accepts search queries and template preferences via a web interface.
+- Uses the provided query to perform a Google search and retrieves relevant URLs.
+- Processes these URLs to generate blog content, utilizing OpenAI's API for content generation and refinement.
+- Supports LaTeX document preparation and PDF compilation.
+- Provides endpoints for downloading the generated PDFs and refining the document content based on user feedback.
+
+Endpoints:
+- `/search-to-blog`: POST endpoint to accept search queries and template preferences, generates blog content, and compiles it into a PDF.
+- `/download-pdf/<filename>`: GET endpoint to download the generated PDF document.
+- `/`: Default endpoint that serves the application's main interface.
+- `/pdf-ready/<filename>`: GET endpoint to check if the PDF is ready for download.
+- `/submit-refinement`: POST endpoint to accept refinements for the generated document content.
+
+Usage:
+- Run the application and navigate to the main page to submit a search query and template preference.
+- The application will generate a blog post based on the query, compile it into a PDF, and provide a link to download the document.
+- Users can also submit refinements to the generated content, which the application will process and use to update the document.
+
+Note:
+This application requires an external configuration for its operation, specified in `configuration.py`, and utilizes external APIs and LaTeX for document processing and PDF generation. Ensure all dependencies are installed and configured before running.
+
+"""
 import requests
 import sys
 import os
@@ -67,11 +93,9 @@ def download_pdf(filename):
         abort(404)
 
 
-
 @app.route('/')
 def index():
     return render_template('index.html')
-
 
 
 @app.route('/pdf-ready/<filename>')
@@ -96,7 +120,6 @@ def submit_refinement():
     
     # Assuming compile_latex_to_pdf takes the .tex path and saves the .pdf in the same directory
     file_path_pdf = compile_latex_to_pdf(file_path_tex)
-    # Return the JSON response with blog content and PDF web path
     return jsonify({'pdf_web_path': file_path_pdf})
 
 
