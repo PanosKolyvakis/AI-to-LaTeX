@@ -1,3 +1,30 @@
+"""
+This script provides functionality for generating LaTeX documents from predefined templates and compiling them into PDF files. It defines a set of LaTeX templates for different types of documents such as scientific articles, reviews, and blog posts. Each template is stored in a dictionary and can be written to a .tex file by specifying the template name. Additionally, the script includes a function to compile a .tex file into a PDF using the pdflatex command, handling directory management and compilation errors.
+
+Features:
+- Predefined LaTeX templates for various document types.
+- Function to write a selected template to a .tex file, with the option to specify the output path.
+- Function to compile a .tex file into a PDF, including error handling and output management.
+
+Usage:
+- To use a template, call `write_template_to_file` with the desired template name and output path.
+- To compile a .tex file to PDF, call `compile_latex_to_pdf` with the path to the .tex file.
+
+Example:
+    template_name = "scientific_document"
+    output_tex_path = 'output.tex'
+    write_template_to_file(template_name, output_tex_path)
+    compile_latex_to_pdf(output_tex_path)
+
+Note:
+This script requires a LaTeX installation on the system and access to the 'pdflatex' command.
+"""
+
+import os
+import subprocess
+
+# Dictionary containing LaTeX template strings for various document types...
+
 import os
 import subprocess
 
