@@ -15,7 +15,8 @@ The user can now do consecutive calls to the GPT API to improve the document acc
 
 
 
-*I would like to deploy this project (perhaps Heroku) on the web once finished
+*Once the project is completed, I plan to deploy it on the web, possibly using Heroku or AWS.
+
 ## Features
 
 - Google Custom Search to fetch relevant URLs based on user queries.
