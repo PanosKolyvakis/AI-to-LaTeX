@@ -1,3 +1,27 @@
+"""
+This script is part of a web application that generates LaTeX documents based on user queries, compiles them into PDFs, and allows for document refinement through OpenAI's GPT API. It interfaces with Google's Custom Search Engine (CSE) to perform searches based on user queries and uses the results to generate content for LaTeX documents. The script supports refining these documents based on further user input and compiles the LaTeX into PDFs using a local LaTeX installation.
+
+Dependencies:
+- Flask 3.0.2: Used for the web server and handling HTTP requests.
+- requests 2.25.1: Used for making HTTP requests to Google's Custom Search API.
+- openai 0.28.0: Used for generating and refining document content with GPT models.
+
+Features:
+- Performs Google searches via the Custom Search JSON API and extracts URLs from the results.
+- Generates LaTeX document content by submitting prompts to the OpenAI API, incorporating search results.
+- Refines existing LaTeX documents based on user input using the OpenAI API.
+- Compiles LaTeX documents into PDF format.
+
+The script is designed to be a part of a larger Flask web application, interacting with frontend components for user input and displaying generated documents. It is structured to be easily integrated into web routes or background tasks within the Flask app.
+
+Usage:
+- The script is not intended to be run as a standalone program. Functions within the script are called by the Flask app in response to user actions (e.g., submitting a search query, requesting document refinement).
+- Configuration parameters (e.g., API keys, file paths) are loaded from a separate `configuration.py` module.
+
+Note:
+- Ensure all non-standard dependencies are installed in your environment.
+- A valid OpenAI API key and Google CSE setup are required for full functionality.
+"""
 
 import os
 import openai
@@ -182,6 +206,7 @@ def compile_latex_to_pdf(tex_file_relative_path='static/docs/response.tex'):
 
 
 if __name__ == '__main__':
+    # THIS IS SOME SIMPLE DEBUGGING DRIVER CODE 
 
     # urls = ['https://www.visitgreece.gr']
     # get_response_from_openai_api(urls)
