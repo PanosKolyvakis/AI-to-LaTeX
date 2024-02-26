@@ -31,10 +31,6 @@ import requests
 import subprocess
 import os
 
-#NON STANDARD packages :
-# Flask==3.0.2
-# requests==2.25.1
-# openai==0.28.0
 
 # Initialize configuration and OpenAI API key
 config = Config()
@@ -169,7 +165,7 @@ def compile_latex_to_pdf(tex_file_relative_path='static/docs/response.tex'):
         # Construct the absolute path to the .tex file
         tex_file_path = os.path.join(base_dir, tex_file_relative_path)
 
-        # Ensure the provided path ends with .tex
+ 
         if not tex_file_path.endswith('.tex'):
             return "Invalid file type. Please provide a .tex file."
 
@@ -206,14 +202,7 @@ def compile_latex_to_pdf(tex_file_relative_path='static/docs/response.tex'):
 
 
 if __name__ == '__main__':
-    # THIS IS SOME SIMPLE DEBUGGING DRIVER CODE 
 
-    # urls = ['https://www.visitgreece.gr']
-    # get_response_from_openai_api(urls)
-    # file_path = config.response_path
-    # pdf_filename = compile_latex_to_pdf(file_path)
-    # subprocess.run(["open" , pdf_filename])
-    # print(f"PDF generated: {pdf_filename}")
     urls = google_search('lion')
 
     get_response_from_openai_api(urls)
