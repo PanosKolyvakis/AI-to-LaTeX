@@ -63,3 +63,17 @@ class Config:
 
 ```
 alternatively you can add variables to your path
+
+## To install all LaTeX tlmgr packages if a template doesnt compile
+Ensure that the .sh script is executable
+
+```bash
+chmod +x install_latex_packages.sh
+```
+
+Run the script to install all .tex-required packages
+
+```bash
+./install_latex_packages.sh
+
+```
