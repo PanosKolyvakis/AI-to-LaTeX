@@ -23,10 +23,7 @@ This script requires a LaTeX installation on the system and access to the 'pdfla
 import os
 import subprocess
 
-# Dictionary containing LaTeX template strings for various document types...
 
-import os
-import subprocess
 
 LaTeX_templates = {
     "scientific_document": r"""
@@ -117,7 +114,7 @@ def write_template_to_file(template_name, output_tex_path='output.tex'):
     
     template = LaTeX_templates[template_name]
     directory = os.path.dirname(output_tex_path)
-    if directory:  # Only try to create the directory if it's not an empty string
+    if directory:  
         os.makedirs(directory, exist_ok=True)
 
     with open(output_tex_path, 'w') as tex_file:
