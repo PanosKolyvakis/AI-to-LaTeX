@@ -1,24 +1,5 @@
 
-
-
 <!DOCTYPE html>
-<!-- 
-This HTML document is designed to serve as the frontend for an AI Document LaTeX Writer web application. 
-It incorporates a user interface for submitting search queries to generate LaTeX documents, viewing the 
-generated PDFs, and refining search queries or document details. The application uses AJAX calls to interact 
-with a Flask backend, sending and retrieving information without needing to reload the page.
-
-Features:
-- Input form for submitting search queries and selecting document templates.
-- Dynamic forms for adding additional details (e.g., author name, date, title) and refining searches.
-- An embedded PDF viewer to display the generated document.
-- AJAX calls to the Flask backend for processing queries, generating LaTeX documents, and checking PDF generation status.
-
-Dependencies:
-- jQuery for AJAX calls and DOM manipulation.
-- KaTeX CSS for styling mathematical content if needed.
-- Google Fonts for the Roboto font.
--->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -95,6 +76,23 @@ Dependencies:
             width: 20%;
             height: 20px; 
         }
+        /* Animation CSS */
+        #aiThinkingAnimation {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 75%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.75);
+            padding: 20px;
+            border-radius: 10px;
+            animation: blinker 3.0s linear infinite;
+        }
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -122,14 +120,11 @@ Dependencies:
         <button type="button" id="submitRefinement" style="display: none;">Submit Refinement</button>
         </div>
     </div>
-        </div>
         <div class="right" id="pdfViewer">
             <iframe src="static/docs/initial.pdf"></iframe>
         </div>
-
-        
-    </div>
-
+    <!-- AI Thinking Animation -->
+    <div id="aiThinkingAnimation">AI is thinking...</div>
     <script>
         $(document).ready(function() {
             // Handle the search button click
@@ -140,6 +135,8 @@ Dependencies:
                 var date = $('#inputDate').val();
                 var title = $('#inputTitle').val();
                 $('#additionalDetailsButton, #refineButton').css('display', 'block');
+                // Show animation
+                $('#aiThinkingAnimation').show();
     
                 $.ajax({
                     type: "POST",
@@ -147,9 +144,13 @@ Dependencies:
                     contentType: "application/json",
                     data: JSON.stringify({ query, template: templateUsed, name, date, title }),
                     success: function(response) {
+                        // Hide animation
+                        $('#aiThinkingAnimation').hide();
                         checkPdfReady('response.pdf', 12);
                     },
                     error: function(xhr, status, error) {
+                        // Hide animation
+                        $('#aiThinkingAnimation').hide();
                         console.error("Error: ", status, " ", error);
                     }
                 });
@@ -172,17 +173,23 @@ Dependencies:
     
             $('#submitRefinement').click(function() {
                 var refinementDetails = $('#largeTextbox').val();
+                // Show animation
+                $('#aiThinkingAnimation').show();
                 $.ajax({
                     type: "POST",
                     url: "/submit-refinement",
                     contentType: "application/json",
                     data: JSON.stringify({ refinement_details: refinementDetails }),
                     success: function(response) {
+                        // Hide animation
+                        $('#aiThinkingAnimation').hide();
                         console.log("Refinement submitted successfully:", response);
     
                         checkPdfReady('response.pdf', 12);
                     },
                     error: function(xhr, status, error) {
+                        // Hide animation
+                        $('#aiThinkingAnimation').hide();
                         console.error("Error submitting refinement:", status, " ", error);
                     }
                 });
@@ -192,6 +199,8 @@ Dependencies:
     
         function checkPdfReady(filename, attemptsLeft) {
             if (attemptsLeft <= 0) {
+                // Hide animation
+                $('#aiThinkingAnimation').hide();
                 console.error("PDF generation timed out.");
                 return;
             }
@@ -201,6 +210,8 @@ Dependencies:
                 url: "/pdf-ready/" + filename,
                 success: function(response) {
                     if (response.ready) {
+                        // Hide animation
+                        $('#aiThinkingAnimation').hide();
                         var timestamp = new Date().getTime();
                         $('iframe').attr('src', '/static/docs/' + filename + '?' + timestamp);
                     } else {
@@ -208,16 +219,13 @@ Dependencies:
                     }
                 },
                 error: function() {
+                    // Hide animation
+                    $('#aiThinkingAnimation').hide();
                     console.error("Error checking PDF readiness.");
                     setTimeout(function() { checkPdfReady(filename, attemptsLeft - 1); }, 5000);
                 }
             });
         }
     </script>
-    
-    
 </body>
 </html>
-
-
-
