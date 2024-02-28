@@ -72,7 +72,7 @@ def get_response_from_openai_api(urls , template , details):
         "The document should include a title, an abstract, sections for introduction, main content (with sub-sections as necessary), and a conclusion. "
         "Incorporate references to the following URLs appropriately within the text, formatted according to LaTeX bibliography standards. "
         "The output should be in valid .tex format, ready for direct compilation into PDF without any human editing. "
-        "Do not include any images or external dependencies not covered in basic LaTeX packages. "
+        "Do not include any images or external dependencies not covered in basic LaTeX packages. \\usepackage{polyglossia} to write in other languages "
         "Here are the URLs to reference: " + formatted_urls + "\n\n"
         "Please ensure the document starts with the \\documentclass{} command, followed by necessary \\usepackage commands, and is structured correctly for compilation. "
         "End the document with \\end{document}. "

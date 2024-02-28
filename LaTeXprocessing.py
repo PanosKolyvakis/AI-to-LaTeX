@@ -29,6 +29,7 @@ LaTeX_templates = {
     "scientific_document": r"""
 \documentclass[twocolumn]{article}
 \usepackage{lipsum, hyperref, graphicx}
+\usepackage{hyperref}
 \title{Sample Two Column Article}
 \author{Author Name}
 \date{\today}
@@ -43,6 +44,7 @@ This is sample content. \lipsum[1-3]
     "review": r"""
 \documentclass[11pt]{article}
 \usepackage{times, geometry, hyperref, natbib, graphicx}
+\usepackage{hyperref}
 \geometry{letterpaper, margin=1in}
 \title{Review Template}
 \author{Author Name \\
@@ -147,8 +149,8 @@ def compile_latex_to_pdf(tex_file_path):
         os.chdir(os.getcwd())
 
 if __name__ == '__main__':
-    template_name = "normal_document_blogpost"
-    output_tex_path = 'output.tex'
-    write_template_to_file(template_name, output_tex_path)
-    result = compile_latex_to_pdf(output_tex_path)
-    print(result)
+
+    output_tex_path = 'static/docs/response.tex'
+    
+    compile_latex_to_pdf(output_tex_path)
+    subprocess.run(['open' , 'response.pdf'])

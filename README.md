@@ -71,9 +71,9 @@ Ensure that the .sh script is executable
 chmod +x install_latex_packages.sh
 ```
 
-Run the script to install all .tex-required packages
+Run the script to install all .tex-required packages NOTE: you probably need to run sudo 
 
 ```bash
-./install_latex_packages.sh
+sudo ./install_latex_packages.sh
 
 ```
