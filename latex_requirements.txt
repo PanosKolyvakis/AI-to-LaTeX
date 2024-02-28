@@ -18,6 +18,7 @@ babel-dutch
 babel-english
 babel-finnish
 babel-french
+babel-greek
 babel-german
 babel-hungarian
 babel-italian

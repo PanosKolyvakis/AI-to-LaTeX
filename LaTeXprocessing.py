@@ -149,8 +149,36 @@ def compile_latex_to_pdf(tex_file_path):
         os.chdir(os.getcwd())
 
 if __name__ == '__main__':
+    def compile_latex_to_pdf(tex_file_path):
+        try:
+            if not tex_file_path.endswith('.tex'):
+                return "Invalid file type. Please provide a .tex file."
+
+            pdf_filename = tex_file_path.replace('.tex', '.pdf')
+            # Ensure we're in the correct directory to include any relative paths in the LaTeX document
+            os.chdir(os.path.dirname(tex_file_path) or '.')
+
+            result = subprocess.run(['pdflatex', '-interaction=nonstopmode', tex_file_path], capture_output=True, text=True)
+
+            # Print stdout and stderr to see the compilation messages
+            print(result.stdout)
+            print(result.stderr)
+
+            # Check for compilation errors
+            if result.returncode != 0:
+                return f"PDF file was not generated due to LaTeX compilation errors."
+
+            if os.path.exists(pdf_filename):
+                print(f"PDF successfully generated: {pdf_filename}")
+                return pdf_filename
+            else:
+                return "PDF file was not generated. Check LaTeX compilation errors."
+        except Exception as e:
+            print(f"An error occurred during LaTeX compilation: {e}")
+        finally:
+            # Ensure we always return to the original directory
+            os.chdir(os.getcwd())
 
     output_tex_path = 'static/docs/response.tex'
-    
-    compile_latex_to_pdf(output_tex_path)
+    compile_latex_to_pdf('static/docs/response.tex')
     subprocess.run(['open' , 'response.pdf'])

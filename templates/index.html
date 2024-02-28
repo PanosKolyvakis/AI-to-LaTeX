@@ -127,8 +127,8 @@
     <div id="aiThinkingAnimation">AI is thinking...</div>
     <script>
         $(document).ready(function() {
-            // Handle the search button click
-            $('#searchButton').click(function() {
+            // Function to execute search
+            function executeSearch() {
                 var query = $('#searchQuery').val();
                 var templateUsed = $('#templateUsed').val();
                 var name = $('#inputName').val();
@@ -154,6 +154,19 @@
                         console.error("Error: ", status, " ", error);
                     }
                 });
+            }
+    
+            // Handle the search button click
+            $('#searchButton').click(function() {
+                executeSearch();
+            });
+    
+            // Trigger search when Enter is pressed in any input within the form
+            $('#searchForm input').on('keypress', function(e) {
+                if (e.which == 13) { // Enter key = 13
+                    e.preventDefault(); // Prevent the default action
+                    executeSearch();
+                }
             });
     
             // Handle the refine button click - Updated to toggle
@@ -227,5 +240,6 @@
             });
         }
     </script>
+    
 </body>
 </html>

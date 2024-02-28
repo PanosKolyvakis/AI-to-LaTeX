@@ -72,13 +72,13 @@ def get_response_from_openai_api(urls , template , details):
         "The document should include a title, an abstract, sections for introduction, main content (with sub-sections as necessary), and a conclusion. "
         "Incorporate references to the following URLs appropriately within the text, formatted according to LaTeX bibliography standards. "
         "The output should be in valid .tex format, ready for direct compilation into PDF without any human editing. "
-        "Do not include any images or external dependencies not covered in basic LaTeX packages. \\usepackage{polyglossia} to write in other languages "
+        "Do not include any images or external dependencies not covered in basic LaTeX packages. \\usepackage{polyglossia} , \\usepackage{fontspec} and \\setmainlanguage{greek} to write in other languages "
         "Here are the URLs to reference: " + formatted_urls + "\n\n"
-        "Please ensure the document starts with the \\documentclass{} command, followed by necessary \\usepackage commands, and is structured correctly for compilation. "
+        "Please ensure the document starts with the \\documentclass{} command (not ```tex), followed by necessary \\usepackage commands, and is structured correctly for compilation. "
         "End the document with \\end{document}. "
         f"use the template: {template} and substitute the following details {details}"
         "Note: The output will be directly used to generate a PDF; it must be fully compliant with LaTeX syntax and conventions."
-        
+    
 
     )
     print(prompt_text)
@@ -96,7 +96,7 @@ def get_response_from_openai_api(urls , template , details):
         final = response.choices[0].message.content if response.choices[0].message else "No content received from API."
         
         # # Ensure the directory exists
-        # os.makedirs(os.path.dirname(tex_file_path), exist_ok=True)
+        os.makedirs(os.path.dirname(tex_file_path), exist_ok=True)
         
         
 
@@ -124,7 +124,7 @@ def get_refined_doc( user_input):
         "The output should be in valid .tex format, ready for direct compilation into PDF without any human editing. "
         "Do not include any images or external dependencies not covered in basic LaTeX packages."
         "Please ensure the document starts with the \\documentclass{} command, followed by necessary \\usepackage commands, and is structured correctly for compilation. "
-        "begin the document with \\begin{document}. "
+        "begin the document with \\begin{document} . "
         "End the document with \\end{document}. "
         "Note: The output will be directly used to generate a PDF from tex; it must be fully compliant with LaTeX syntax and conventions and should not contain any delimeters (remove any that the user input may contain such as ```latex)."
         
@@ -143,7 +143,7 @@ def get_refined_doc( user_input):
         )
         final = response.choices[0].message.content if response.choices[0].message else "No content received from API."
         
-        # # Ensure the directory exists
+
         # os.makedirs(os.path.dirname(tex_file_path), exist_ok=True)
         tex_file_path = 'static/docs/response.tex'
         # Write content to the .tex file
