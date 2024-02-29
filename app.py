@@ -122,6 +122,16 @@ def submit_refinement():
     file_path_pdf = compile_latex_to_pdf(file_path_tex)
     return jsonify({'pdf_web_path': file_path_pdf})
 
+@app.route('/submit-edited-tex', methods=['POST'])
+def submit_edited_tex():
+    data = request.json
+    tex_content = data.get('texContent', '')
+    # Save the .tex content to a file
+    with open('static/docs/response.tex', 'w') as tex_file:
+        tex_file.write(tex_content)
+    compile_latex_to_pdf('static/docs/response.tex')
+    # Return a success response
+    return jsonify({"message": "TeX content updated and document recompiled successfully"})
 
 
 

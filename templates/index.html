@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,7 +41,6 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            background-color: #666;
             overflow-y: auto;
             flex-direction: column; 
             justify-content: flex-start; 
@@ -52,12 +49,18 @@
         h1, form, #blogPost {
             width: 100%;
         }
-        #additionalDetailsButton, #refineButton, #editTexButton ,#recompileEditsButton {
+        #additionalDetailsButton, #refineButton, #editTexButton ,#submitTexEditsButton {
             width: 100px; 
             padding: 3px;
             font-size: 0.9em;
             margin: 5px 0;
             display:  table-row;
+        }
+        #submitTexEditsButton {
+            display: none; 
+            position: fixed;
+            right: calc(50% ); 
+            bottom: 50px; 
         }
         input[type="text"], select, button, textarea {
             font-size: 0.9em;
@@ -157,8 +160,9 @@
         </div>
         <button type="button" id="refineButton">Refine</button>
         <textarea id="largeTextbox" style="display: none;"></textarea>
-        <button type="button" id="submitRefinement" style="display: none;">Submit Refinement</button>
+        <button type="button" id="submitRefinement" style="display: none;">Submit</button>
         <button type="button" id="editTexButton" style="position: fixed; bottom: 20px; right: 50%;">Edit .tex</button>
+        <button id="submitTexEditsButton">Submit</button>
     </div>
     <div class="right" id="pdfViewer">
         <iframe src="static/docs/initial.pdf"></iframe>
@@ -166,167 +170,155 @@
         <div class="right" id="pdfViewer">
             <iframe src="static/docs/initial.pdf"></iframe>
             <textarea id="texEditor" placeholder="Your .tex content here..."></textarea>
-            <button id="recompileEditsButton">Recompile</button>
+
         </div>
     </div>
 
     <div id="aiThinkingAnimation">AI is thinking...</div>
     <script>
-        $(document).ready(function() {
-            // Function to execute search
-            function executeSearch() {
-                var query = $('#searchQuery').val();
-                var templateUsed = $('#templateUsed').val();
-                var name = $('#inputName').val();
-                var date = $('#inputDate').val();
-                var title = $('#inputTitle').val();
-                $('#additionalDetailsButton, #refineButton').css('display', 'block');
-                // Show animation
-                $('#aiThinkingAnimation').show();
-    
-                $.ajax({
-                    type: "POST",
-                    url: "/search-to-blog",
-                    contentType: "application/json",
-                    data: JSON.stringify({ query, template: templateUsed, name, date, title }),
-                    success: function(response) {
-                        // Hide animation
-                        $('#aiThinkingAnimation').hide();
-                        checkPdfReady('response.pdf', 12);
-                    },
-                    error: function(xhr, status, error) {
-                        // Hide animation
-                        $('#aiThinkingAnimation').hide();
-                        console.error("Error: ", status, " ", error);
-                    }
+        
+    $(document).ready(function() {
+        // Function to execute search
+        function executeSearch() {
+            var query = $('#searchQuery').val();
+            var templateUsed = $('#templateUsed').val();
+            var name = $('#inputName').val();
+            var date = $('#inputDate').val();
+            var title = $('#inputTitle').val();
+            $('#aiThinkingAnimation').show();
+
+            $.ajax({
+                type: "POST",
+                url: "/search-to-blog",
+                contentType: "application/json",
+                data: JSON.stringify({ query, template: templateUsed, name, date, title }),
+                success: function(response) {
+                    $('#aiThinkingAnimation').hide();
+                    checkPdfReady('response.pdf', 12);
+                },
+                error: function(xhr, status, error) {
+                    $('#aiThinkingAnimation').hide();
+                    console.error("Error: ", status, " ", error);
+                }
+            });
+        }
+
+        $('#searchButton').click(function() {
+            executeSearch();
+        });
+
+        $('#searchForm input').on('keypress', function(e) {
+            if (e.which == 13) { 
+                e.preventDefault();
+                executeSearch();
+            }
+        });
+
+        $('#refineButton').click(function() {
+            $('#largeTextbox, #submitRefinement').toggle();
+        });
+
+        $('#additionalDetailsButton').click(function() {
+            $('#additionalDetailsForm').toggle();
+        });
+
+        $('#submitDetails').click(function() {
+            var name = $('#inputName').val();
+            var date = $('#inputDate').val();
+            var title = $('#inputTitle').val();
+            // Perform any action needed with the details, then hide the form
+            console.log("Details submitted:", { name, date, title });
+            $('#additionalDetailsForm').hide();
+        });
+
+        $('#submitRefinement').click(function() {
+            var refinementDetails = $('#largeTextbox').val();
+            $('#aiThinkingAnimation').show();
+            $.ajax({
+                type: "POST",
+                url: "/submit-refinement",
+                contentType: "application/json",
+                data: JSON.stringify({ refinement_details: refinementDetails }),
+                success: function(response) {
+                    $('#aiThinkingAnimation').hide();
+                    console.log("Refinement submitted successfully:", response);
+                    checkPdfReady('response.pdf', 12);
+                },
+                error: function(xhr, status, error) {
+                    $('#aiThinkingAnimation').hide();
+                    console.error("Error submitting refinement:", status, " ", error);
+                }
+            });
+            $('#largeTextbox, #submitRefinement').hide();
+        });
+
+        $('#editTexButton').click(function() {
+            $('#texEditor').toggle();
+            $('#submitTexEditsButton').toggle($('#texEditor').is(':visible'));
+
+            if ($('#texEditor').is(':visible')) {
+                $.get('/static/docs/response.tex', function(data) {
+                    $('#texEditor').val(data);
+                }).fail(function() {
+                    $('#texEditor').val('Failed to load .tex content.');
                 });
             }
-    
-            // Handle the search button click
-            $('#searchButton').click(function() {
-                executeSearch();
-            });
-    
-            // Trigger search when Enter is pressed in any input within the form
-            $('#searchForm input').on('keypress', function(e) {
-                if (e.which == 13) { 
-                    e.preventDefault(); // Prevent the default action
-                    executeSearch();
-                }
-            });
-    
-            // Handle the refine button click - Updated to toggle
-            $('#refineButton').click(function() {
-                $('#largeTextbox, #submitRefinement').toggle(); // Use toggle to show/hide
-            });
-    
-            // Handle the additional details button click - Updated to toggle
-            $('#additionalDetailsButton').click(function() {
-                $('#additionalDetailsForm').toggle(); // Use toggle to show/hide
-            });
-    
-            // Handle the submit details button click
-            $('#submitDetails').click(function() {
-                $('#additionalDetailsForm').hide();
-            });
-    
-            $('#submitRefinement').click(function() {
-                var refinementDetails = $('#largeTextbox').val();
-                // Show animation
-                $('#aiThinkingAnimation').show();
-                $.ajax({
-                    type: "POST",
-                    url: "/submit-refinement",
-                    contentType: "application/json",
-                    data: JSON.stringify({ refinement_details: refinementDetails }),
-                    success: function(response) {
-                        // Hide animation
-                        $('#aiThinkingAnimation').hide();
-                        console.log("Refinement submitted successfully:", response);
-    
-                        checkPdfReady('response.pdf', 12);
-                    },
-                    error: function(xhr, status, error) {
-                        // Hide animation
-                        $('#aiThinkingAnimation').hide();
-                        console.error("Error submitting refinement:", status, " ", error);
-                    }
-                });
-                $('#largeTextbox, #submitRefinement').hide();
-            });
-            
-
-            
-
-
-            // Toggle .tex editor visibility and recompile button
-            $('#editTexButton').click(function() {
-                $('#texEditor').toggle();
-                $('#recompileEditsButton').toggle(); // Ensure recompile button visibility matches .tex editor
-                
-                if ($('#texEditor').is(':visible')) {
-                    // Fetch .tex content from server and display
-                    $.get('/static/docs/response.tex', function(data) {
-                        $('#texEditor').val(data);
-                    }).fail(function() {
-                        $('#texEditor').val('Failed to load .tex content. Please check the file path and server.');
-                    });
-                }
-            });
-
-            // Handle "Recompile Edits" button click
-            $('#recompileEditsButton').click(function() {
-                var editedTexContent = $('#texEditor').val();
-                // AJAX call to send the edited content back to the server for recompilation
-                $.ajax({
-                    type: "POST",
-                    url: "/path/to/recompile-endpoint",
-                    contentType: "application/json",
-                    data: JSON.stringify({ texContent: editedTexContent }),
-                    success: function(response) {
-                        // Handle successful recompilation, e.g., refresh the PDF viewer
-                        var timestamp = new Date().getTime();
-                        $('iframe').attr('src', '/path/to/generated/pdf?' + timestamp);
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Error recompiling .tex document:", status, " ", error);
-                    }
-                });
-            });
-
-            // Initially hide the "Recompile Edits" button
-            $('#recompileEditsButton').hide();
         });
-            
+
+        $('#submitTexEditsButton').click(function() {
+            var editedTexContent = $('#texEditor').val();
+            $('#aiThinkingAnimation').show();
+            $.ajax({
+                type: "POST",
+                url: "/submit-edited-tex",
+                contentType: "application/json",
+                data: JSON.stringify({ texContent: editedTexContent }),
+                success: function(response) {
+                    setTimeout(function() {
+                        $('#aiThinkingAnimation').hide();
+                        var timestamp = new Date().getTime();
+                        $('iframe').attr('src', '/static/docs/response.pdf?' + timestamp);
+                    }, 1000);
+                },
+                error: function(xhr, status, error) {
+                    $('#aiThinkingAnimation').hide();
+                    // Update the .right or #pdfViewer div to show a custom message
+                    $('.right').html('<div style="color: white; text-align: center; padding-top: 20%; font-size: 20px;">Document does not compile to .pdf</div>');
+                    // Hide the .tex editor and the submit button
+                    $('#texEditor, #submitTexEditsButton').hide();
+                }
+            });
+            $('#texEditor, #submitTexEditsButton').hide();
+        });
+
         function checkPdfReady(filename, attemptsLeft) {
             if (attemptsLeft <= 0) {
-                // Hide animation
                 $('#aiThinkingAnimation').hide();
-                console.error("PDF generation timed out.");
+                $('#pdfViewer').html('<div style="color: white; text-align: center;">Document does not compile to .pdf</div>');
                 return;
             }
-    
+
             $.ajax({
                 type: "GET",
                 url: "/pdf-ready/" + filename,
                 success: function(response) {
                     if (response.ready) {
-
                         $('#aiThinkingAnimation').hide();
                         var timestamp = new Date().getTime();
                         $('iframe').attr('src', '/static/docs/' + filename + '?' + timestamp);
                     } else {
-                        setTimeout(function() { checkPdfReady(filename, attemptsLeft - 1); }, 5000);
+                        setTimeout(() => checkPdfReady(filename, attemptsLeft - 1), 5000);
                     }
                 },
                 error: function() {
-
                     $('#aiThinkingAnimation').hide();
-                    console.error("Error checking PDF readiness.");
-                    setTimeout(function() { checkPdfReady(filename, attemptsLeft - 1); }, 5000);
+                    $('#pdfViewer').html('<div style="color: white; text-align: center;">Error checking PDF readiness.</div>');
                 }
             });
         }
+    });
+    
     </script>
+    
 </body>
 </html>
