@@ -28,17 +28,16 @@ import openai
 from configuration import Config
 import subprocess
 import requests
-import subprocess
-import os
+from WebScrapper import read_url
 
 
 # Initialize configuration and OpenAI API key
 config = Config()
 openai.api_key = config.openapi_key
+global tex_file_path
 tex_file_path = 'static/docs/response.tex'
 
-
-def google_search(query, num_results=5):
+def google_search(query, num_results=3):
     print('Google Search initated')
     try:
         response = requests.get(
@@ -62,8 +61,11 @@ def google_search(query, num_results=5):
 
 # This function gets the response from the OpenAI API and saves it as a .tex file
 # Populate {LaTex_temps[1]} and return 
+
+
 def get_response_from_openai_api(urls , template , details):
     # Joining URLs with LaTeX newline for clarity in the prompt.
+    print('____________EXECUTING NORMAL RESPONSE FUNCTION___________')
     formatted_urls = " \\\\ ".join(urls)  # LaTeX newline between URLs for clarity.
     
     # Construct the prompt text for the GPT API call.
@@ -109,6 +111,64 @@ def get_response_from_openai_api(urls , template , details):
         print(f"An error occurred: {e}")
 
 
+#-------------------------------//-------------------------
+#-------------------------------//-------------------------
+#-------------------------------//-------------------------
+#-------------------------------//-------------------------
+#-------------------------------//-------------------------
+#-------------------------------//-------------------------
+#-------------------------------//-------------------------
+
+
+def get_response_from_web_scrape(urls , template ):
+    print('____________EXECUTING WEB SCRAPE FUNCTION___________')
+    webscrapped_text = ''
+
+    for url in urls:
+        webscrapped_text += read_url(url) if read_url(url) else  ' '
+    #-------------------------------//-------------------------
+    print(f'____________this is the webscraped text ----------> ___________{webscrapped_text}')
+
+    prompt_text = ("Generate a complete LaTeX document article on a specified topic. "
+        " please add recent dates from the webscrapped_text any date that the article was written at as a reference"
+        "The document should include a title, an abstract, sections for introduction, main content (with sub-sections as necessary), and a conclusion. "
+        "Incorporate references to the following URLs appropriately within the text, formatted according to LaTeX bibliography standards. "
+        "The output should be in valid .tex format, ready for direct compilation into PDF without any human editing. "
+        "Do not include any images or external dependencies not covered in basic LaTeX packages. \\usepackage{polyglossia} , \\usepackage{fontspec} and \\setmainlanguage{greek} to write in other languages "
+        "here is the web- scrapped recent script that you need to format nicely within the template " "\n\n"
+        "Please ensure the document starts with the \\documentclass{} command (not ```tex), followed by necessary \\usepackage commands, and is structured correctly for compilation. "
+        "start with \\begin{document} End the document with \\end{document}. "
+        f"use the template: {template} and substitute/summarize the following details {webscrapped_text}"
+        "Note: The output will be directly used to generate a PDF; it must be fully compliant with LaTeX syntax and conventions."
+        )
+    print(prompt_text)
+    # Corrected file path to save the .tex document
+    try:
+        # Actual OpenAI API call
+        response = openai.ChatCompletion.create(
+            model='gpt-3.5-turbo',
+            messages=[
+                {"role": "system", "content": "check prompt"},
+                {"role": "user", "content": prompt_text}
+            ]
+        )
+        
+        final = response.choices[0].message.content if response.choices[0].message else "No content received from API."
+        print('----------------->FINAL MESSAGE RETRIEVED FROM GPT ------------------> {}'.format(final))
+
+        cleaned_content = final.strip("`") 
+        # # Ensure the directory exists
+        os.makedirs(os.path.dirname(tex_file_path), exist_ok=True)
+        
+
+        # Write content to the .tex file
+        with open(tex_file_path, 'w') as file:
+            file.write(cleaned_content)
+        print('GPT response written in directory')
+    
+    except Exception as e:
+        print(f"An error occurred: {e}")
+            
 
 
 
@@ -120,12 +180,12 @@ def get_refined_doc( user_input):
         
     # Construct the prompt text for the GPT API call.
     prompt_text = (
-        f"Refine the following {tex_file} accirding to the following '{user_input}'"        
+        f"Refine the following {tex_file} according to the following '{user_input}'"        
         "The output should be in valid .tex format, ready for direct compilation into PDF without any human editing. "
         "Do not include any images or external dependencies not covered in basic LaTeX packages."
         "Please ensure the document starts with the \\documentclass{} command, followed by necessary \\usepackage commands, and is structured correctly for compilation. "
         "begin the document with \\begin{document} . "
-        "End the document with \\end{document}. "
+        "End the document with \\end{document}."
         "Note: The output will be directly used to generate a PDF from tex; it must be fully compliant with LaTeX syntax and conventions and should not contain any delimeters (remove any that the user input may contain such as ```latex)."
         
 
@@ -171,11 +231,7 @@ def compile_latex_to_pdf(tex_file_relative_path='static/docs/response.tex'):
 
         # Construct PDF filename
         pdf_filename = tex_file_path.replace('.tex', '.pdf')
-
-        # Save current directory
         current_dir = os.getcwd()
-
-        # Change to the directory of the tex_file to ensure pdflatex runs correctly
         os.chdir(os.path.dirname(tex_file_path) or '.')
 
         # Run pdflatex command with nonstopmode option to ignore errors
@@ -203,8 +259,23 @@ def compile_latex_to_pdf(tex_file_relative_path='static/docs/response.tex'):
 
 if __name__ == '__main__':
 
-    urls = google_search('lion')
+    urls = google_search('israel-Gaza war')
 
-    get_response_from_openai_api(urls)
+    template = r"""
+        \documentclass[twocolumn]{article}
+        \usepackage{lipsum, hyperref, graphicx}
+        \usepackage{hyperref}
+        \title{Sample Two Column Article}
+        \author{Author Name}
+        \date{\today}
+        \begin{document}
+        \maketitle
+        \begin{abstract}
+        This is a sample abstract text.
+        \end{abstract}
+        This is sample content. \lipsum[1-3]
+        \end{document}
+    """
+    get_response_from_web_scrape(urls , template )
 
-    compile_latex_to_pdf()
+

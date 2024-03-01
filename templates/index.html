@@ -87,6 +87,14 @@
             background-color: rgb(0, 0, 0);
             overflow-y: auto; 
         }
+        #webScrapingFeature {
+            color: rgb(7, 255, 139); 
+            /* color: rgb(0, 0, 0);  */
+            padding-right: 0; 
+            margin-left: 0px;
+            margin-left: 10px;
+        }
+
         #additionalDetailsForm, #refineSearchForm {
             display: none;
             font-size: 0.9em;
@@ -147,9 +155,18 @@
                 <option value="scientific_document">Scientific Document</option>
                 <option value="blogpost">Blogpost</option>
                 <option value="review">Review</option>
+                
             </select>
+            
             <button type="button" id="searchButton">Search</button>
+
         </form>
+        <div id="webScrapingFeature" style="padding: 20px;">
+            <label>
+                <input type="checkbox" id="enableWebScraping" />
+                Enable Web Scraping
+            </label>
+        </div>
         <button type="button" id="additionalDetailsButton" style="display: block;">Add Details</button>
         <div id="additionalDetailsForm" style="display: none;">
             <input type="text" id="inputName" placeholder="Enter Name">
@@ -178,20 +195,20 @@
     <script>
         
     $(document).ready(function() {
-        // Function to execute search
         function executeSearch() {
             var query = $('#searchQuery').val();
             var templateUsed = $('#templateUsed').val();
             var name = $('#inputName').val();
             var date = $('#inputDate').val();
             var title = $('#inputTitle').val();
+            var enableWebScraping = $('#enableWebScraping').is(':checked') ? '1' : '0';
             $('#aiThinkingAnimation').show();
 
             $.ajax({
                 type: "POST",
                 url: "/search-to-blog",
                 contentType: "application/json",
-                data: JSON.stringify({ query, template: templateUsed, name, date, title }),
+                data: JSON.stringify({ query, template: templateUsed, name, date, title, enableWebScraping }),
                 success: function(response) {
                     $('#aiThinkingAnimation').hide();
                     checkPdfReady('response.pdf', 12);
@@ -226,6 +243,7 @@
             var name = $('#inputName').val();
             var date = $('#inputDate').val();
             var title = $('#inputTitle').val();
+        
             // Perform any action needed with the details, then hide the form
             console.log("Details submitted:", { name, date, title });
             $('#additionalDetailsForm').hide();
@@ -251,6 +269,7 @@
             });
             $('#largeTextbox, #submitRefinement').hide();
         });
+        
 
         $('#editTexButton').click(function() {
             $('#texEditor').toggle();

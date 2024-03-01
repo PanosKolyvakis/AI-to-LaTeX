@@ -32,8 +32,9 @@ from flask import Flask, request, jsonify, render_template, send_from_directory,
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from configuration import Config
-from response import compile_latex_to_pdf, get_response_from_openai_api , google_search , get_refined_doc
+from response import compile_latex_to_pdf, get_response_from_openai_api , google_search , get_refined_doc , get_response_from_web_scrape
 from LaTeXprocessing import LaTeX_templates
+
 
 
 # Get the Config Correct
@@ -47,33 +48,40 @@ def search_to_blog():
     data = request.json
 
     query = data['query']
+    print('------------->>>>> retrieveing data {}'.format(query) , f'{data}')
 
-    print(data)
     query = data.get('query')
     template = data.get('template')
     print(template)
     name = data.get('name')
     date = data.get('date')
     title = data.get('title')
+    need_web_scrapping = bool(int(data.get('enableWebScraping')))
+
+    print('------- >>> this is the need webSCRAPE DEBUGGING MESSAGE {} and type {}'.format(need_web_scrapping , type(need_web_scrapping)) )
+
     details = [name, date, title]
     if not query:
         return jsonify({"error": "No query provided"}), 400
 
     urls = google_search(query)
-    print(urls if urls else 'no URL FOUND')
+
 
     if urls:
+
         template_to_use = LaTeX_templates[template]
-        # Generate blog content for display using URLs
-        get_response_from_openai_api(urls , template_to_use , details = details)
-        
+
+        if not need_web_scrapping:
+            # Generate blog content for display using URLs
+            get_response_from_openai_api(urls , template_to_use , details = details  )
+        else:
+
+            get_response_from_web_scrape(urls , template_to_use)
+            
         # Adjust the path for saving the .tex file within 'static/docs'
         tex_filename = 'response.tex'
 
         file_path_tex = os.path.join(app.static_folder, 'docs', tex_filename)
-        
-
-        # Assuming compile_latex_to_pdf takes the .tex path and saves the .pdf in the same directory
         file_path_pdf = compile_latex_to_pdf(file_path_tex)
 
 
@@ -96,6 +104,7 @@ def download_pdf(filename):
 @app.route('/')
 def index():
     return render_template('index.html')
+
 
 
 @app.route('/pdf-ready/<filename>')
