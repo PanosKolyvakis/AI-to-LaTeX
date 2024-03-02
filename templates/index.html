@@ -27,65 +27,88 @@
             justify-content: flex-start;
         }
         .left {
+            flex: 0 0 47%; /* Assign 40% width to .left */
             padding-top: 4%;
             background: url(static/robot.png) center center / cover no-repeat, #444;
             color: white;
             text-align: center;
+            align-items: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
         }
         .right {
-            position: relative; 
-            flex-grow: 1;
+            flex: 0 0 53; 
+            position: relative;
             background-color: #666;
-            overflow-y: auto;
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            overflow-y: auto;
-            flex-direction: column; 
-            justify-content: flex-start; 
+            padding: 20px; 
+            box-sizing: border-box; 
+        }  
+        .checkbox-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            background-color: rgba(0, 0, 0, 0.5); 
+            padding: 10px;
+            border-radius: 8px; 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+            position: fixed; 
+            top: 50%; 
+            left: 0; 
+            transform: translateY(-50%); 
+            margin-left: 20px; 
+            overflow-y: auto; 
+            max-height: 90%;
         }
+        .texEditorExpanded {
+            display: block; /* Make sure it is visible */
+            width: 100%; /* Make it as wide as the checkbox-container */
+            height: 60vh; /* Make the editor 60% of the viewport height */
+            position: absolute; /* Position it absolutely within the right container */
+            bottom: 0; 
+            left: 0; 
+            z-index: 5; 
 
-        h1, form, #blogPost {
-            width: 100%;
         }
-        #additionalDetailsButton, #refineButton, #editTexButton ,#submitTexEditsButton {
-            width: 100px; 
-            padding: 3px;
-            font-size: 0.9em;
-            margin: 5px 0;
-            display:  table-row;
-        }
-        #submitTexEditsButton {
-            display: none; 
-            position: fixed;
-            right: calc(50% ); 
-            bottom: 50px; 
+        .expanded-checkbox-container {
+            height: 60%; 
+            width: 45%; 
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            box-sizing: border-box;
         }
         input[type="text"], select, button, textarea {
             font-size: 0.9em;
             margin: 10px 0;
         }
-        #pdfViewer iframe, #texEditor {
-            width: 100%;
-            height: 100vh;
+        #pdfViewer iframe {
+            width: calc(100% - 40px); 
+            height: calc(120%); 
             border: none;
+            background-color: white; 
+            margin: -15px 20px;
+            box-sizing: border-box; 
         }
         #texEditor {
             display: none; 
-            position: absolute; 
-            top: 0;
-            left: 0;
-            right: 0; 
+            position: absolute;
             bottom: 0; 
-            width: 100%; 
-            height: auto; 
-            padding: 0px;
+            left: 10px; 
+            right: 10px; 
+            height: 60%; 
+            padding: 20px;
             box-sizing: border-box;
             font-family: monospace;
             color: #fff;
-            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.8); 
+            border: 1px solid #fff; 
             overflow-y: auto; 
+            z-index: 5; 
         }
         #webScrapingFeature {
             color: rgb(7, 255, 139); 
@@ -109,7 +132,8 @@
         }
         #submitRefinement {
             display: none; 
-            width: 20%;
+
+            width: 80px;
             height: 20px; 
         }
         /* Animation CSS */
@@ -150,172 +174,223 @@
     <div class="left">
         <h1>AI Document LaTeX Writer</h1>
         <form id="searchForm">
+            
             <input type="text" id="searchQuery" placeholder="Google search query">
             <select id="templateUsed">
                 <option value="scientific_document">Scientific Document</option>
                 <option value="blogpost">Blogpost</option>
                 <option value="review">Review</option>
-                
             </select>
-            
             <button type="button" id="searchButton">Search</button>
-
         </form>
-        <div id="webScrapingFeature" style="padding: 20px;">
-            <label>
-                <input type="checkbox" id="enableWebScraping" />
-                Enable Web Scraping
-            </label>
+        <div class="checkbox-container">
+            <div style="padding: 20px;">
+                <label>
+                    <input type="checkbox" id="enableWebScraping" />
+                    Enable Web Scraping
+                </label>
+            </div>
+            <div style="padding: 20px;">
+                <label>
+                    <input type="checkbox" id="additionalDetailsCheckbox" />
+                    Add Details
+                </label>
+            </div>
+            <div id="additionalDetailsForm" style="display: none;">
+                <input type="text" id="inputName" placeholder="Enter Name">
+                <input type="text" id="inputDate" placeholder="Enter Date">
+                <input type="text" id="inputTitle" placeholder="Enter Title">
+                <button type="button" id="submitDetails">Submit Details</button>
+            </div>
+            <div style="padding: 20px;">
+                <label>
+                    <input type="checkbox" id="refineCheckbox" />
+                    Refine
+                </label>
+            </div>
+            <textarea id="largeTextbox" style="display: none;"></textarea>
+            <button type="button" id="submitRefinement" style="display: none;">Submit</button>
+            <div style="padding: 20px;">
+                <label>
+                    <input type="checkbox" id="editTexCheckbox" />
+                    Edit .tex
+                </label>
+            </div>
+            <textarea id="texEditor" placeholder="Your .tex content here..." style="display: none;"></textarea>
+            <button id="submitTexEditsButton" style="display: none;">Submit</button>
         </div>
-        <button type="button" id="additionalDetailsButton" style="display: block;">Add Details</button>
-        <div id="additionalDetailsForm" style="display: none;">
-            <input type="text" id="inputName" placeholder="Enter Name">
-            <input type="text" id="inputDate" placeholder="Enter Date">
-            <input type="text" id="inputTitle" placeholder="Enter Title">
-            <button type="button" id="submitDetails">Submit Details</button>
-        </form>
-        </div>
-        <button type="button" id="refineButton">Refine</button>
-        <textarea id="largeTextbox" style="display: none;"></textarea>
-        <button type="button" id="submitRefinement" style="display: none;">Submit</button>
-        <button type="button" id="editTexButton" style="position: fixed; bottom: 20px; right: 50%;">Edit .tex</button>
-        <button id="submitTexEditsButton">Submit</button>
     </div>
     <div class="right" id="pdfViewer">
         <iframe src="static/docs/initial.pdf"></iframe>
-        <textarea id="texEditor" placeholder=""></textarea>
-        <div class="right" id="pdfViewer">
-            <iframe src="static/docs/initial.pdf"></iframe>
-            <textarea id="texEditor" placeholder="Your .tex content here..."></textarea>
-
-        </div>
     </div>
 
     <div id="aiThinkingAnimation">AI is thinking...</div>
     <script>
-        
-    $(document).ready(function() {
-        function executeSearch() {
-            var query = $('#searchQuery').val();
-            var templateUsed = $('#templateUsed').val();
-            var name = $('#inputName').val();
-            var date = $('#inputDate').val();
-            var title = $('#inputTitle').val();
-            var enableWebScraping = $('#enableWebScraping').is(':checked') ? '1' : '0';
-            $('#aiThinkingAnimation').show();
-
-            $.ajax({
-                type: "POST",
-                url: "/search-to-blog",
-                contentType: "application/json",
-                data: JSON.stringify({ query, template: templateUsed, name, date, title, enableWebScraping }),
-                success: function(response) {
-                    $('#aiThinkingAnimation').hide();
-                    checkPdfReady('response.pdf', 12);
-                },
-                error: function(xhr, status, error) {
-                    $('#aiThinkingAnimation').hide();
-                    console.error("Error: ", status, " ", error);
-                }
-            });
-        }
-
-        $('#searchButton').click(function() {
-            executeSearch();
-        });
-
-        $('#searchForm input').on('keypress', function(e) {
-            if (e.which == 13) { 
-                e.preventDefault();
-                executeSearch();
-            }
-        });
-
-        $('#refineButton').click(function() {
-            $('#largeTextbox, #submitRefinement').toggle();
-        });
-
-        $('#additionalDetailsButton').click(function() {
-            $('#additionalDetailsForm').toggle();
-        });
-
-        $('#submitDetails').click(function() {
-            var name = $('#inputName').val();
-            var date = $('#inputDate').val();
-            var title = $('#inputTitle').val();
-        
-            // Perform any action needed with the details, then hide the form
-            console.log("Details submitted:", { name, date, title });
-            $('#additionalDetailsForm').hide();
-        });
-
-        $('#submitRefinement').click(function() {
-            var refinementDetails = $('#largeTextbox').val();
-            $('#aiThinkingAnimation').show();
-            $.ajax({
-                type: "POST",
-                url: "/submit-refinement",
-                contentType: "application/json",
-                data: JSON.stringify({ refinement_details: refinementDetails }),
-                success: function(response) {
-                    $('#aiThinkingAnimation').hide();
-                    console.log("Refinement submitted successfully:", response);
-                    checkPdfReady('response.pdf', 12);
-                },
-                error: function(xhr, status, error) {
-                    $('#aiThinkingAnimation').hide();
-                    console.error("Error submitting refinement:", status, " ", error);
-                }
-            });
-            $('#largeTextbox, #submitRefinement').hide();
-        });
-        
-
-        $('#editTexButton').click(function() {
-            $('#texEditor').toggle();
-            $('#submitTexEditsButton').toggle($('#texEditor').is(':visible'));
-
-            if ($('#texEditor').is(':visible')) {
-                $.get('/static/docs/response.tex', function(data) {
-                    $('#texEditor').val(data);
-                }).fail(function() {
-                    $('#texEditor').val('Failed to load .tex content.');
+        $(document).ready(function() {
+            function executeSearch() {
+                var query = $('#searchQuery').val();
+                var templateUsed = $('#templateUsed').val();
+                var name = $('#inputName').val();
+                var date = $('#inputDate').val();
+                var title = $('#inputTitle').val();
+                var enableWebScraping = $('#enableWebScraping').is(':checked') ? '1' : '0';
+                $('#aiThinkingAnimation').show();
+    
+                $.ajax({
+                    type: "POST",
+                    url: "/search-to-blog",
+                    contentType: "application/json",
+                    data: JSON.stringify({ query, template: templateUsed, name, date, title, enableWebScraping }),
+                    success: function(response) {
+                        $('#aiThinkingAnimation').hide();
+                        checkPdfReady('response.pdf', 12);
+                    },
+                    error: function(xhr, status, error) {
+                        $('#aiThinkingAnimation').hide();
+                        console.error("Error: ", status, " ", error);
+                    }
                 });
             }
-        });
-
-        $('#submitTexEditsButton').click(function() {
-            var editedTexContent = $('#texEditor').val();
-            $('#aiThinkingAnimation').show();
-            $.ajax({
-                type: "POST",
-                url: "/submit-edited-tex",
-                contentType: "application/json",
-                data: JSON.stringify({ texContent: editedTexContent }),
-                success: function(response) {
-                    setTimeout(function() {
-                        $('#aiThinkingAnimation').hide();
-                        var timestamp = new Date().getTime();
-                        $('iframe').attr('src', '/static/docs/response.pdf?' + timestamp);
-                    }, 1000);
-                },
-                error: function(xhr, status, error) {
-                    $('#aiThinkingAnimation').hide();
-                    // Update the .right or #pdfViewer div to show a custom message
-                    $('.right').html('<div style="color: white; text-align: center; padding-top: 20%; font-size: 20px;">Document does not compile to .pdf</div>');
-                    // Hide the .tex editor and the submit button
-                    $('#texEditor, #submitTexEditsButton').hide();
+    
+            $('#searchButton').click(function() {
+                executeSearch();
+            });
+    
+            $('#searchForm input').on('keypress', function(e) {
+                if (e.which == 13) {
+                    e.preventDefault();
+                    executeSearch();
                 }
             });
-            $('#texEditor, #submitTexEditsButton').hide();
-        });
+    
+            // Toggle additional details form
+            $('#additionalDetailsCheckbox').change(function() {
+                $('#additionalDetailsForm').toggle(this.checked);
+            });
+    
+            // Toggle refinement textbox
+            $('#refineCheckbox').change(function() {
+                $('#largeTextbox, #submitRefinement').toggle(this.checked);
+            });
+    
+            $('#editTexCheckbox').change(function() {
+                var checkboxContainer = $('.checkbox-container');
+                var texEditor = $('#texEditor');
+                var submitTexEditsButton = $('#submitTexEditsButton');
+                var isChecked = $(this).is(':checked');
 
-        function checkPdfReady(filename, attemptsLeft) {
-            if (attemptsLeft <= 0) {
-                $('#aiThinkingAnimation').hide();
-                $('#pdfViewer').html('<div style="color: white; text-align: center;">Document does not compile to .pdf</div>');
-                return;
-            }
+                if (isChecked) {
+                    checkboxContainer.addClass('expanded-checkbox-container');
+                    texEditor.css({
+                        'display': 'block',
+                        'position': 'absolute',
+                        'bottom': '0', // Anchor to the bottom
+                        'left': '0',
+                        'right': '0',
+                        'height': '100%', // 3/5ths of the parent's height
+                        'padding': '0px',
+                        'box-sizing': 'border-box',
+                        'overflow-y': 'auto'
+                    });
+                    submitTexEditsButton.css({
+                        'display': 'block', // Ensure button is visible
+                        'position': 'fixed', // Use fixed to position relative to viewport
+                        'bottom': '20px', // Position at the bottom
+                        'right': '20px', // Position to the right
+                        'z-index': '10' // Ensure it's above other elements
+                    });
+                    // Load .tex content
+                    $.get('/static/docs/response.tex', function(data) {
+                        texEditor.val(data);
+                    }).fail(function() {
+                        texEditor.val('Failed to load .tex content.');
+                    });
+                } else {
+                    checkboxContainer.removeClass('expanded-checkbox-container');
+                    texEditor.css({
+                        'display': 'none',
+                    });
+                    submitTexEditsButton.css({
+                        'display': 'none',
+                    });
+                    // Optionally, reset other styles if necessary
+                }
+            });
+
+            $('#submitDetails').click(function() {
+                var name = $('#inputName').val();
+                var date = $('#inputDate').val();
+                var title = $('#inputTitle').val();
+    
+                console.log("Details submitted:", { name, date, title });
+                $('#additionalDetailsForm').hide();
+                $('#additionalDetailsCheckbox').prop('checked', false); // Uncheck the checkbox
+            });
+    
+            $('#submitRefinement').click(function() {
+                var refinementDetails = $('#largeTextbox').val();
+                $('#aiThinkingAnimation').show();
+                $.ajax({
+                    type: "POST",
+                    url: "/submit-refinement",
+                    contentType: "application/json",
+                    data: JSON.stringify({ refinement_details: refinementDetails }),
+                    success: function(response) {
+                        $('#aiThinkingAnimation').hide();
+                        console.log("Refinement submitted successfully:", response);
+                        checkPdfReady('response.pdf', 12);
+                    },
+                    error: function(xhr, status, error) {
+                        $('#aiThinkingAnimation').hide();
+                        console.error("Error submitting refinement:", status, " ", error);
+                    }
+                });
+                $('#largeTextbox, #submitRefinement').hide();
+                $('#refineCheckbox').prop('checked', false); 
+            });
+    
+            $('#submitTexEditsButton').click(function() {
+                var editedTexContent = $('#texEditor').val();
+
+                // Reset checkbox container and .tex editor to original state immediately
+                $('.checkbox-container').removeClass('expanded-checkbox-container'); // Remove the class that expands the container
+                $('#texEditor').css({
+                    'display': 'none', // Hide the .tex editor
+                    // Reset other styles if necessary
+                });
+                $('#submitTexEditsButton').css({
+                    'display': 'none', // Hide the submit button
+                    // Reset position styles if they were changed
+                });
+                $('#editTexCheckbox').prop('checked', false); // Uncheck the checkbox
+
+                // Now proceed with the AJAX request
+                $('#aiThinkingAnimation').show();
+                $.ajax({
+                    type: "POST",
+                    url: "/submit-edited-tex",
+                    contentType: "application/json",
+                    data: JSON.stringify({ texContent: editedTexContent }),
+                    success: function(response) {
+                        setTimeout(function() {
+                            $('#aiThinkingAnimation').hide();
+                            var timestamp = new Date().getTime();
+                            $('iframe').attr('src', '/static/docs/response.pdf?' + timestamp);
+                        }, 1000);
+                    },
+                    error: function(xhr, status, error) {
+                        $('#aiThinkingAnimation').hide();
+                        $('.right').html('<div style="color: white; text-align: center; padding-top: 20%; font-size: 20px;">Document does not compile to .pdf</div>');
+                    }
+                });
+            });
+
+            function checkPdfReady(filename, attemptsLeft) {
+                if (attemptsLeft <= 0) {
+                    $('#aiThinkingAnimation').hide();
+                    $('#pdfViewer').html('<div style="color: white; text-align: center;">Document does not compile to .pdf</div>');
+                    return;
+                }
 
             $.ajax({
                 type: "GET",

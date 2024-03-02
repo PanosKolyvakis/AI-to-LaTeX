@@ -13,7 +13,7 @@ This project is a Flask-based web application that utilizes Google Custom Search
 You can find my BLOG on this project [here](https://panoskolyvakis.github.io/blog.html)
 The user can now do consecutive calls to the GPT API to improve the document according to preferences (e.g. you can click refine button to add/remove paragraphs, or customize the document in general)
 
-I have recently added a .tex editor that can be used to recompile the document to the webUI. 
+I have recently added a .tex editor that can be used to recompile the document to the webUI. The editor may be used to edit the document manually and recompile. 
 
 
 *Once the project is completed, I plan to deploy it on the web, possibly using Heroku or AWS.
