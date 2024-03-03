@@ -6,7 +6,11 @@ from bs4 import BeautifulSoup
 # from webdriver_manager.chrome import ChromeDriverManager
 # from selenium.webdriver.common.by import By
 
+
+
 def read_url(url):
+    # Initialize main_content to ensure it has a value even if the request fails
+    main_content = ''
 
     def count_tokens(text): return len(text.split())
     # Send a GET request to the webpage
@@ -19,21 +23,20 @@ def read_url(url):
         # Extract the title of the webpage
         title = soup.find('title').text
         
+        # Attempt to extract the description, provide a default if not found
         description = soup.find('meta', attrs={'name': 'description'})['content'] if soup.find('meta', attrs={'name': 'description'}) else 'No description found'
         
-        # <p> tags 
+        # Find all <p> tags and concatenate their text to form the main content
         paragraphs = soup.find_all('p')
         main_content = '\n'.join([para.text for para in paragraphs])
 
-        print('token length : {}  \n '.format(count_tokens(main_content)))
+        # Debugging print statements (you might want to remove these for production code)
+        print('Token length:', count_tokens(main_content))
         print(f"Title: {title}\nDescription: {description}\n\nMain Content:\n{main_content}")
     else:
         print("Failed to retrieve the webpage")
 
-
-
     return main_content
-
 
 
 if __name__ =='__main__':
