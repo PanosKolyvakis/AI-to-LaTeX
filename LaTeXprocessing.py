@@ -41,6 +41,87 @@ This is a sample abstract text.
 This is sample content. \lipsum[1-3]
 \end{document}
 """,
+    "newsletter": r"""\documentclass[10pt,a4paper]{article}
+
+% Define geometry
+\setlength\topmargin{-48pt}
+\setlength\headheight{15pt} % Adjusted from 0pt to ensure enough space for headers
+\setlength\headsep{25pt}
+\setlength\marginparwidth{-20pt}
+\setlength\textwidth{7.0in}
+\setlength\textheight{9.5in}
+\setlength\oddsidemargin{-30pt}
+\setlength\evensidemargin{-30pt}
+
+\frenchspacing % better looking spacing
+
+% Call packages we'll need
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage{graphicx} % Support for images
+\usepackage{amssymb,amsmath} % Math packages
+\usepackage{multicol} % Three-column layout
+\usepackage{url} % Support for clickable links
+\usepackage{marvosym} % Symbols
+\usepackage{wrapfig} % Allows wrapping text around figures
+\usepackage[T1]{fontenc} % Font encoding
+\usepackage{charter} % Charter font for main content
+\usepackage{blindtext} % Dummy text
+\usepackage{datetime} % Custom date
+\newdateformat{mydate}{\monthname[\THEMONTH] \THEYEAR}
+\usepackage[pdfpagemode=FullScreen, colorlinks=false]{hyperref} % Links and PDF behavior
+
+% Customize footer
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lfoot{\footnotesize 
+    Science \& Technology Newsletter \\
+    \Mundus\ \href{http://www.howtotex.com}{HowToTeX.com} \quad
+    \Telefon\ 555-5555 \quad
+    \Letter\ \href{mailto:frits@howtotex.com}{frits@howtotex.com}
+}
+\cfoot{}
+\rfoot{\footnotesize ~\\ Page \thepage}
+\renewcommand{\headrulewidth}{0.0pt} % No bar on top of page
+\renewcommand{\footrulewidth}{0.4pt} % Bar on bottom of page
+
+%%% Definitions for custom commands
+\newcommand{\HorRule}[1]{\noindent\rule{\linewidth}{#1}}
+\newcommand{\SepRule}{\noindent\begin{center}\rule{250pt}{1pt}\end{center}}
+\newcommand{\JournalName}[1]{\begin{center}\Huge #1\end{center}\par\normalsize\normalfont}
+\newcommand{\JournalIssue}[1]{\hfill \textsc{\mydate \today, No #1}\par\normalsize\normalfont}
+\newcommand{\NewsItem}[1]{\large #1 \vspace{4pt}\par\normalsize\normalfont}
+\newcommand{\NewsAuthor}[1]{\hfill by \textsc{#1} \vspace{4pt}\par\normalfont}
+
+\begin{document}
+% Your document content follows
+\JournalIssue{1}
+\JournalName{}
+\noindent\HorRule{3pt} \\[-0.75\baselineskip]
+\HorRule{1pt}
+
+% Front article
+\vspace{0.5cm}
+\SepRule
+\vspace{0.5cm}
+
+\begin{center}
+\begin{minipage}[h]{0.75\linewidth}
+	\NewsItem{}
+	\emph{}
+\end{minipage}
+\end{center}
+
+% Other news (1)
+\vspace{0.5cm}
+\SepRule
+\vspace{0.5cm}
+\begin{multicols}
+	\NewsItem{}
+	\NewsAuthor{}
+	\emph{}
+\end{multicols}
+\end{document}""",
+
     "review": r"""
 \documentclass[11pt]{article}
 \usepackage{times, geometry, hyperref, natbib, graphicx}
@@ -182,3 +263,97 @@ if __name__ == '__main__':
     output_tex_path = 'static/docs/response.tex'
     compile_latex_to_pdf('static/docs/response.tex')
     subprocess.run(['open' , 'response.pdf'])
+
+
+
+
+
+
+
+
+
+
+
+# template i am trying to incorporate
+
+
+# \documentclass[10pt,a4paper]{article}
+
+# % Define geometry
+# \setlength\topmargin{-48pt}
+# \setlength\headheight{15pt} % Adjusted from 0pt to ensure enough space for headers
+# \setlength\headsep{25pt}
+# \setlength\marginparwidth{-20pt}
+# \setlength\textwidth{7.0in}
+# \setlength\textheight{9.5in}
+# \setlength\oddsidemargin{-30pt}
+# \setlength\evensidemargin{-30pt}
+
+# \frenchspacing % better looking spacing
+
+# % Call packages we'll need
+# \usepackage[english]{babel} % English language/hyphenation
+# \usepackage{graphicx} % Support for images
+# \usepackage{amssymb,amsmath} % Math packages
+# \usepackage{multicol} % Three-column layout
+# \usepackage{url} % Support for clickable links
+# \usepackage{marvosym} % Symbols
+# \usepackage{wrapfig} % Allows wrapping text around figures
+# \usepackage[T1]{fontenc} % Font encoding
+# \usepackage{charter} % Charter font for main content
+# \usepackage{blindtext} % Dummy text
+# \usepackage{datetime} % Custom date
+# \newdateformat{mydate}{\monthname[\THEMONTH] \THEYEAR}
+# \usepackage[pdfpagemode=FullScreen, colorlinks=false]{hyperref} % Links and PDF behavior
+
+# % Customize footer
+# \usepackage{fancyhdr}
+# \pagestyle{fancy}
+# \lfoot{\footnotesize 
+#     Science \& Technology Newsletter \\
+#     \Mundus\ \href{http://www.howtotex.com}{HowToTeX.com} \quad
+#     \Telefon\ 555-5555 \quad
+#     \Letter\ \href{mailto:frits@howtotex.com}{frits@howtotex.com}
+# }
+# \cfoot{}
+# \rfoot{\footnotesize ~\\ Page \thepage}
+# \renewcommand{\headrulewidth}{0.0pt} % No bar on top of page
+# \renewcommand{\footrulewidth}{0.4pt} % Bar on bottom of page
+
+# %%% Definitions for custom commands
+# \newcommand{\HorRule}[1]{\noindent\rule{\linewidth}{#1}}
+# \newcommand{\SepRule}{\noindent\begin{center}\rule{250pt}{1pt}\end{center}}
+# \newcommand{\JournalName}[1]{\begin{center}\Huge #1\end{center}\par\normalsize\normalfont}
+# \newcommand{\JournalIssue}[1]{\hfill \textsc{\mydate \today, No #1}\par\normalsize\normalfont}
+# \newcommand{\NewsItem}[1]{\large #1 \vspace{4pt}\par\normalsize\normalfont}
+# \newcommand{\NewsAuthor}[1]{\hfill by \textsc{#1} \vspace{4pt}\par\normalfont}
+
+# \begin{document}
+# % Your document content follows
+# \JournalIssue{1}
+# \JournalName{Science \& Technology}
+# \noindent\HorRule{3pt} \\[-0.75\baselineskip]
+# \HorRule{1pt}
+
+# % Front article
+# \vspace{0.5cm}
+# \SepRule
+# \vspace{0.5cm}
+
+# \begin{center}
+# \begin{minipage}[h]{0.75\linewidth}
+# 	\NewsItem{News on Gaza: Latest Updates}
+# 	\emph{Lorem ipsum dolor sit amet, consectetur adipiscing elit...}
+# \end{minipage}
+# \end{center}
+
+# % Other news (1)
+# \vspace{0.5cm}
+# \SepRule
+# \vspace{0.5cm}
+# \begin{multicols}{3}
+# 	\NewsItem{Another Perspective on Gaza Crisis}
+# 	\NewsAuthor{John Doe}
+# 	\emph{Sed ac tellus in tortor luctus efficitur...}
+# \end{multicols}
+# \end{document}
