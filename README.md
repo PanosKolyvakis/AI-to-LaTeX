@@ -14,9 +14,12 @@ This project is a Flask-based web application that utilizes Google Custom Search
 # There is a video on this [URL](https://panoskolyvakis.github.io/blog.html) of my BLOG clearly illustrating all the incorporated features
 
 
-The user can now do consecutive calls to the GPT API to improve the document according to preferences (e.g. you can click refine button to add/remove paragraphs, or customize the document in general)
+The user can now do consecutive calls to the GPT API to improve the document according to preferences (e.g. you can click refine button to add/remove paragraphs, or customize the document in general).
 
-I have recently added a .tex editor that can be used to recompile the document to the webUI. The editor may be used to edit the document manually and recompile. ß
+## The current plan is to cache and keep data of good LLM responses (prompt- answer pairs), such that a GPT LLM is fine tuned in the future once enough high quality training examples are generated for training. This is due to OpenAI making fine-tuned models accessible by the API recently ... 
+
+
+I have recently added a .tex editor that can be used to recompile the document to the webUI. The editor may be used to edit the document manually and recompile. 
 
 
 *Once the project is completed, I plan to deploy it on the web, possibly using Heroku or AWS.
