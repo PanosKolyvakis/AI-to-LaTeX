@@ -5,7 +5,10 @@ Links: To create a link, wrap the link text in brackets [ ], followed by the URL
 Images: To add an image, use the syntax ![alt text](image URL).
 Lists: For unordered lists, use asterisks, plus signs, or hyphens. For ordered lists, use numbers. -->
 
-![Check some of the current features shown; ](LaTeX.gif)
+<video width="320" height="240" controls>
+  <source src="LaTeX.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
 # Flask Blog and PDF Generator
 
