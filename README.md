@@ -10,7 +10,10 @@ Lists: For unordered lists, use asterisks, plus signs, or hyphens. For ordered l
 
 This project is a Flask-based web application that utilizes Google Custom Search and OpenAI's GPT to generate blog posts based on user queries. It then formats these posts into LaTeX and compiles them into PDFs for download. This README outlines how to set up and run the project locally.
 
-You can find my BLOG on this project [here](https://panoskolyvakis.github.io/blog.html)
+
+# There is a video on this [URL](https://panoskolyvakis.github.io/blog.html) of my BLOG clearly illustrating all the incorporated features
+
+
 The user can now do consecutive calls to the GPT API to improve the document according to preferences (e.g. you can click refine button to add/remove paragraphs, or customize the document in general)
 
 I have recently added a .tex editor that can be used to recompile the document to the webUI. The editor may be used to edit the document manually and recompile. ß
