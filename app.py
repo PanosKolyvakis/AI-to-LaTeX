@@ -22,129 +22,136 @@ Usage:
 
 Note:
 This application requires an external configuration for its operation, specified in `configuration.py`, and utilizes external APIs and LaTeX for document processing and PDF generation. Ensure all dependencies are installed and configured before running.
-
 """
-import requests
-import sys
-import os
+
+#import statements
+import logging
 from configuration import Config
 from flask import Flask, request, jsonify, render_template, send_from_directory, abort
 import sys
+import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from configuration import Config
-from response import compile_latex_to_pdf, get_response_from_openai_api , google_search , get_refined_doc , get_response_from_web_scrape
+from response import compile_latex_to_pdf, get_response_from_openai_api, google_search, get_refined_doc, get_response_from_web_scrape
 from LaTeXprocessing import LaTeX_templates
 
+# Configure logging
 
 
-# Get the Config Correct
+#opens on http://127.0.0.1:5000
+with open('app_logs.log', 'w'): # opening to make sure the log clears up
+    pass
+
+# Configure logging to print to both file and terminal
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s:%(levelname)s:%(message)s',
+                    handlers=[
+                        logging.FileHandler('app_logs.log'),
+                        logging.StreamHandler(sys.stdout)
+                    ])
+# getting the config details correct
 config = Config()
 
-# initialize flask
-app = Flask(__name__, template_folder= config.html_template)
+# initializing Flask object
+app = Flask(__name__, template_folder=config.html_template)
 
+# methods;
 @app.route('/search-to-blog', methods=['POST'])
 def search_to_blog():
     data = request.json
-
-    query = data['query']
-    print('------------->>>>> retrieveing data {}'.format(query) , f'{data}')
+    logging.info('Received /search-to-blog request: %s', data)
 
     query = data.get('query')
     template = data.get('template')
-    print(template)
     name = data.get('name')
     date = data.get('date')
     title = data.get('title')
-    need_web_scrapping = bool(int(data.get('enableWebScraping')))
+    need_web_scrapping = bool(data.get('enableWebScraping', False))
 
-    print('------- >>> this is the need webSCRAPE DEBUGGING MESSAGE {} and type {}'.format(need_web_scrapping , type(need_web_scrapping)) )
-
-    details = [name, date, title]
     if not query:
+        logging.error('No query provided in /search-to-blog')
         return jsonify({"error": "No query provided"}), 400
 
+    logging.info('Processing query: %s with template: %s', query, template)
     urls = google_search(query)
 
-
     if urls:
-
+        logging.info('URLs retrieved for query: %s', urls)
         template_to_use = LaTeX_templates[template]
 
         if not need_web_scrapping:
-            # Generate blog content for display using URLs
-            get_response_from_openai_api(urls , template_to_use , details = details  )
+            logging.info('Generating content without web scraping for: %s', query)
+            get_response_from_openai_api(urls, template_to_use, details=[name, date, title])
         else:
+            logging.info('Generating content with web scraping for: %s', query)
+            get_response_from_web_scrape(urls, template_to_use)
 
-            get_response_from_web_scrape(urls , template_to_use)
-            
-        # Adjust the path for saving the .tex file within 'static/docs'
         tex_filename = 'response.tex'
-
         file_path_tex = os.path.join(app.static_folder, 'docs', tex_filename)
         file_path_pdf = compile_latex_to_pdf(file_path_tex)
+        logging.info('PDF generated and available at: %s', file_path_pdf)
 
-
-        # Return the JSON response with blog content and PDF web path
-        return jsonify({'pdf_web_path': file_path_pdf, 'blog_post':'', 'references': urls})
+        return jsonify({'pdf_web_path': file_path_pdf, 'blog_post': '', 'references': urls})
     else:
+        logging.error('No URLs found for query: %s', query)
         return jsonify({"error": "No URLs were found for the query."}), 404
 
 
 @app.route('/download-pdf/<filename>')
 def download_pdf(filename):
-    # Serve PDFs from the 'static/docs' directory
     directory = os.path.join(app.static_folder, 'docs')
     try:
-        return send_from_directory(directory, filename, as_attachment=False)
+        logging.info('Downloading PDF: %s', filename)
+        return send_from_directory(directory, filename, as_attachment=True)
     except FileNotFoundError:
+        logging.error('PDF file not found: %s', filename)
         abort(404)
 
 
 @app.route('/')
 def index():
+    logging.info('Serving the index page')
     return render_template('index.html')
-
 
 
 @app.route('/pdf-ready/<filename>')
 def pdf_ready(filename):
-
     pdf_path = os.path.join(app.static_folder, 'docs', filename)
-
     if os.path.exists(pdf_path):
+        logging.info('PDF is ready for download: %s', filename)
         return jsonify({'ready': True})
     else:
+        logging.info('PDF not ready for download: %s', filename)
         return jsonify({'ready': False})
 
 
 @app.route('/submit-refinement', methods=['POST'])
 def submit_refinement():
     data = request.json
+    logging.info('Received refinement details: %s', data)
     refinement_details = data.get('refinement_details')
     get_refined_doc(refinement_details)
-    # Adjust the path for saving the .tex file within 'static/docs'
     tex_filename = 'response.tex'
     file_path_tex = os.path.join(app.static_folder, 'docs', tex_filename)
-    
-    # Assuming compile_latex_to_pdf takes the .tex path and saves the .pdf in the same directory
     file_path_pdf = compile_latex_to_pdf(file_path_tex)
+    logging.info('Document refined and PDF recompiled: %s', file_path_pdf)
     return jsonify({'pdf_web_path': file_path_pdf})
+
 
 @app.route('/submit-edited-tex', methods=['POST'])
 def submit_edited_tex():
+    
     data = request.json
     tex_content = data.get('texContent', '')
-    # Save the .tex content to a file
+    logging.info('Received TeX content for recompilation')
+
     with open('static/docs/response.tex', 'w') as tex_file:
         tex_file.write(tex_content)
     compile_latex_to_pdf('static/docs/response.tex')
-    # Return a success response
+    logging.info('TeX content updated and document recompiled successfully')
     return jsonify({"message": "TeX content updated and document recompiled successfully"})
 
-
-
 if __name__ == '__main__':
+    print('Initializing flask in local IP : http://127.0.0.1:5000')
     app.run(debug=True)
 
 

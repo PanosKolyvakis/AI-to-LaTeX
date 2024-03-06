@@ -19,12 +19,21 @@ Example:
 Note:
 This script requires a LaTeX installation on the system and access to the 'pdflatex' command.
 """
-
+#import statements
 import os
 import subprocess
+import logging
+
+#logging
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s:%(levelname)s:%(message)s',
+                    handlers=[
+                        logging.FileHandler('app_logs.log'),
+                        logging.StreamHandler()
+                    ])
 
 
-
+#temps
 LaTeX_templates = {
     "scientific_document": r"""
 \documentclass[twocolumn]{article}
@@ -191,44 +200,56 @@ Acknowledgments here.
 }
 
 
+
+
 def write_template_to_file(template_name, output_tex_path='output.tex'):
     if template_name not in LaTeX_templates:
+        logging.error(f"Template '{template_name}' not found.")
         return f"Template '{template_name}' not found."
     
     template = LaTeX_templates[template_name]
     directory = os.path.dirname(output_tex_path)
-    if directory:  
+    if directory:
         os.makedirs(directory, exist_ok=True)
 
-    with open(output_tex_path, 'w') as tex_file:
-        tex_file.write(template)  # Directly write the template without placeholders
-    print('Template successfully saved to .tex file.')
+    try:
+        with open(output_tex_path, 'w') as tex_file:
+            tex_file.write(template)  # Directly write the template without placeholders
+        logging.info(f'Template successfully saved to {output_tex_path}.')
+    except Exception as e:
+        logging.error(f"Failed to write template to file: {e}")
+        return f"Failed to write template to file: {e}"
 
 def compile_latex_to_pdf(tex_file_path):
     try:
         if not tex_file_path.endswith('.tex'):
+            logging.error("Invalid file type. Please provide a .tex file.")
             return "Invalid file type. Please provide a .tex file."
 
         pdf_filename = tex_file_path.replace('.tex', '.pdf')
         # Ensure we're in the correct directory to include any relative paths in the LaTeX document
+        original_dir = os.getcwd()
         os.chdir(os.path.dirname(tex_file_path) or '.')
-        
+
         result = subprocess.run(['pdflatex', '-interaction=nonstopmode', tex_file_path], capture_output=True, text=True)
-        
+
         # Check for compilation errors
         if result.returncode != 0:
+            logging.error(f"PDF file was not generated due to LaTeX compilation errors. {result.stdout}\n{result.stderr}")
             return f"PDF file was not generated due to LaTeX compilation errors. {result.stdout}\n{result.stderr}"
-        
+
         if os.path.exists(pdf_filename):
+            logging.info(f"PDF successfully generated: {pdf_filename}")
             return f"PDF successfully generated: {pdf_filename}"
         else:
+            logging.error("PDF file was not generated. Check LaTeX compilation errors.")
             return "PDF file was not generated. Check LaTeX compilation errors."
     except Exception as e:
+        logging.error(f"An error occurred during LaTeX compilation: {e}")
         return f"An error occurred during LaTeX compilation: {e}"
     finally:
         # Ensure we always return to the original directory
-        os.chdir(os.getcwd())
-
+        os.chdir(original_dir)
 if __name__ == '__main__':
     def compile_latex_to_pdf(tex_file_path):
         try:
