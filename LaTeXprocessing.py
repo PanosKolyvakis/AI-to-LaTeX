@@ -276,7 +276,6 @@ if __name__ == '__main__':
 
 # template i am trying to incorporate
 
-
 # \documentclass[10pt,a4paper]{article}
 
 # % Define geometry
