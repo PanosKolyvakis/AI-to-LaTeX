@@ -88,7 +88,7 @@ def get_response_from_openai_api(urls , template , details):
         
     )
     print(prompt_text)
-    logger.info(f'Prompt text: {prompt_text}')
+    logger.info(f'Prompt text: ~~~ {prompt_text} ~~~')
     try:
         response = openai.ChatCompletion.create(
             model='gpt-3.5-turbo',
@@ -100,7 +100,7 @@ def get_response_from_openai_api(urls , template , details):
         
         final = response.choices[0].message.content if response.choices[0].message else "No content received from API."
         os.makedirs(os.path.dirname(tex_file_path), exist_ok=True)
-        
+        logger.info(f'Final message from GPT : !-! {final} !-!')
         with open(tex_file_path, 'w') as file:
             file.write(final)
         print('GPT response written in directory')
@@ -134,7 +134,7 @@ def get_response_from_web_scrape(urls, template):
         "Note: The output will be directly used to generate a PDF; it must be fully compliant with LaTeX syntax and conventions."
         )
     print(prompt_text)
-    logger.info(f'Prompt text for web scrape: {prompt_text}')
+    logger.info(f' Prompt text for web scrape: ~~~ {prompt_text} ~~~')
     try:
         response = openai.ChatCompletion.create(
             model='gpt-3.5-turbo',
@@ -146,7 +146,7 @@ def get_response_from_web_scrape(urls, template):
         
         final = response.choices[0].message.content if response.choices[0].message else "No content received from API."
         print('----------------->FINAL MESSAGE RETRIEVED FROM GPT ------------------> {}'.format(final))
-        logger.info(f'Final message from GPT (web scrape): {final}')
+        logger.info(f'Final message from GPT (web scrape): !-! {final} !-!')
 
         cleaned_content = final.strip("`")
         os.makedirs(os.path.dirname(tex_file_path), exist_ok=True)
