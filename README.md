@@ -5,11 +5,7 @@ Links: To create a link, wrap the link text in brackets [ ], followed by the URL
 Images: To add an image, use the syntax ![alt text](image URL).
 Lists: For unordered lists, use asterisks, plus signs, or hyphens. For ordered lists, use numbers. -->
 
-<video width="320" height="240" controls>
-  <source src="LaTeX.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
-
+![Here is an illustration of what the WebUI looks like (while undergoing development)](AI_LaTeX.png)
 # Flask Blog and PDF Generator
 
 This project is a Flask-based web application that utilizes Google Custom Search and OpenAI's GPT to generate blog posts based on user queries. It then formats these posts into LaTeX and compiles them into PDFs for download. This README outlines how to set up and run the project locally.
@@ -17,7 +13,7 @@ This project is a Flask-based web application that utilizes Google Custom Search
 You can find my BLOG on this project [here](https://panoskolyvakis.github.io/blog.html)
 The user can now do consecutive calls to the GPT API to improve the document according to preferences (e.g. you can click refine button to add/remove paragraphs, or customize the document in general)
 
-I have recently added a .tex editor that can be used to recompile the document to the webUI. The editor may be used to edit the document manually and recompile. 
+I have recently added a .tex editor that can be used to recompile the document to the webUI. The editor may be used to edit the document manually and recompile. ß
 
 
 *Once the project is completed, I plan to deploy it on the web, possibly using Heroku or AWS.
